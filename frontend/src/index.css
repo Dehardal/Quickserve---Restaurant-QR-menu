@@ -1,0 +1,87 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+@layer base {
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f8fafc; /* bg-slate-50 */
+    color: #334155;            /* text-slate-700 */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    height: 100%;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+    color: #0f172a;            /* text-slate-900 */
+  }
+}
+
+/* Premium Stripe-like Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.15); /* Light indigo */
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.35);
+}
+
+/* Modern Minimalist SaaS Layout Classes */
+.surface-card {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.6); /* border-slate-200/60 */
+  border-radius: 1rem;                       /* rounded-2xl */
+  box-shadow: 0 2px 12px -1px rgba(0, 0, 0, 0.03), 0 4px 30px -2px rgba(0, 0, 0, 0.01); /* shadow-soft */
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.surface-card:hover {
+  border-color: rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.01), 0 16px 32px -4px rgba(0, 0, 0, 0.04); /* shadow-premium */
+}
+
+.surface-input {
+  background: #ffffff;
+  border: 1px solid rgba(203, 213, 225, 0.6); /* border-slate-300/60 */
+  border-radius: 0.75rem;                     /* rounded-xl */
+  outline: 2px solid transparent;             /* outline-none */
+  outline-offset: 2px;
+  color: #1e293b;                             /* text-slate-800 */
+  font-size: 0.875rem;                        /* text-sm */
+  line-height: 1.25rem;
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.surface-input:focus {
+  border-color: rgba(99, 102, 241, 0.6);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.08);
+}
+
+/* Glassmorphism Topbar and Side Navigation Blur */
+.glass-topbar {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+/* Custom Print styling for table tent QR cards and invoices */
+@media print {
+  /* Hide headers, navigations and interactive elements during print */
+  header, nav, aside, button, .print-hidden, .print\\:hidden {
+    display: none !important;
+  }
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+}
