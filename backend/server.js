@@ -71,10 +71,21 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/dishes', dishRoutes);
 app.use('/api/orders', orderRoutes);
 
+const path = require('path');
+
 // Health Check Route
 app.get('/health', (req, res) => {
   res.status(200).json({ success: true, message: 'Restaurant QR Menu SaaS API is healthy' });
 });
+
+// Serve frontend build in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '../frontend/dist', 'index.html'));
+  });
+}
 
 // Start Server
 const PORT = process.env.PORT || 5000;
