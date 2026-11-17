@@ -1,10 +1,10 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
-import { User, ShieldCheck } from 'lucide-react';
+import { User, ShieldCheck, Utensils, ExternalLink } from 'lucide-react';
 
 const Navbar = ({ title }) => {
-  const { user } = useAuth();
+  const { user, restaurant } = useAuth();
   const { socket } = useSocket();
 
   const isSocketConnected = socket?.connected || false;
@@ -19,7 +19,22 @@ const Navbar = ({ title }) => {
       </div>
 
       {/* User Actions & Sockets indicator */}
-      <div className="flex items-center gap-5">
+      <div className="flex items-center gap-4">
+        {/* Quick link to live menu if restaurant profile is active */}
+        {restaurant?._id && (
+          <a
+            href={`/menu/${restaurant._id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-50/70 hover:bg-brand-50 border border-brand-200/60 rounded-xl text-[11px] font-bold text-brand-700 transition"
+            title="Open customer digital menu"
+          >
+            <Utensils className="w-3.5 h-3.5 text-brand-600" />
+            <span>Customer Menu</span>
+            <ExternalLink className="w-3 h-3 text-brand-400" />
+          </a>
+        )}
+
         {/* Real-time status dot */}
         <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-full">
           <span className={`w-1.5 h-1.5 rounded-full ${isSocketConnected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500 animate-pulse'}`}></span>
@@ -35,7 +50,7 @@ const Navbar = ({ title }) => {
               <span className="text-xs font-bold text-slate-800 leading-tight">{user.name}</span>
               <span className="text-[9px] font-semibold text-brand-600 uppercase tracking-wide flex items-center gap-0.5 self-end mt-0.5 leading-none">
                 <ShieldCheck className="w-3 h-3 shrink-0" />
-                Store Owner
+                {user.role === 'superadmin' ? 'Super Admin' : 'Store Owner'}
               </span>
             </div>
             <div className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-500 shadow-sm shrink-0">

@@ -19,18 +19,24 @@ const createOrder = async (req, res) => {
       items,
       paymentMethod,
       paymentStatus,
-      transactionId
+      transactionId,
+      orderType: clientOrderType,
+      companyName,
+      deskNumber,
+      deliveryAddress,
     } = req.body;
 
-    if (!restaurantId || !tableNumber || !customerName || !customerMobile || !items || items.length === 0) {
+    const orderType = clientOrderType || (companyName ? 'company_delivery' : (tableNumber === 'Takeaway Counter' ? 'takeaway' : 'dine_in'));
+
+    if (!restaurantId || !customerName || !customerMobile || !items || items.length === 0) {
       return res.status(400).json({ success: false, message: 'Please provide all required fields' });
     }
 
-    // Verify cryptographic table authorization if tableToken is provided
-    if (tableToken) {
+    // Verify cryptographic authorization token for Dine-In and Corporate Delivery
+    if (orderType === 'dine_in' && tableToken) {
       try {
         const decoded = jwt.verify(tableToken, process.env.JWT_SECRET || 'supersecretjwtkeyforrestaurantqrmenusaas');
-        if (decoded.restaurantId !== restaurantId || decoded.tableNumber !== tableNumber) {
+        if (decoded.restaurantId !== restaurantId || (decoded.tableNumber && decoded.tableNumber !== tableNumber)) {
           return res.status(403).json({
             success: false,
             message: `Security Warning: Unauthorized table order. QR authorization does not match ${tableNumber}.`,
@@ -40,6 +46,21 @@ const createOrder = async (req, res) => {
         return res.status(403).json({
           success: false,
           message: 'Security Warning: Invalid or expired table QR authorization token.',
+        });
+      }
+    } else if (orderType === 'company_delivery' && tableToken) {
+      try {
+        const decoded = jwt.verify(tableToken, process.env.JWT_SECRET || 'supersecretjwtkeyforrestaurantqrmenusaas');
+        if (decoded.companyName && companyName && decoded.companyName !== companyName) {
+          return res.status(403).json({
+            success: false,
+            message: `Security Warning: Corporate QR code mismatch for ${companyName}.`,
+          });
+        }
+      } catch (tokenErr) {
+        return res.status(403).json({
+          success: false,
+          message: 'Security Warning: Invalid or expired corporate QR authorization token.',
         });
       }
     }
@@ -75,25 +96,45 @@ const createOrder = async (req, res) => {
       });
     }
 
-    const isPaidOnline = paymentStatus === 'paid' || paymentMethod === 'upi_online';
-    const finalPaymentMethod = isPaidOnline ? 'upi' : (paymentMethod || 'cash');
+    const isPaidOnline = paymentStatus === 'paid' || paymentMethod === 'upi_online' || paymentMethod === 'online_cashfree';
+    const finalPaymentMethod = isPaidOnline ? (paymentMethod === 'online_cashfree' ? 'online_cashfree' : 'upi') : (paymentMethod || 'cash');
     const finalPaymentStatus = isPaidOnline ? 'paid' : 'pending';
+
+    const discountAmount = Number(req.body.discount) || 0;
+    const couponCode = req.body.couponCode ? req.body.couponCode.trim().toUpperCase() : '';
+    const grandTotal = Math.max(0, subtotal - discountAmount);
 
     // Create the order
     const order = await Order.create({
       restaurant: restaurant.owner, // store owner id to tie to Dashboard
-      tableNumber,
+      tableNumber: tableNumber || (orderType === 'takeaway' ? 'Takeaway Counter' : 'Table 1'),
+      orderType,
+      companyName: companyName || '',
+      deskNumber: deskNumber || '',
+      deliveryAddress: deliveryAddress || '',
       customerName,
       customerMobile,
       specialInstructions: specialInstructions || '',
       items: orderItems,
       subtotal,
+      discount: discountAmount,
+      couponCode,
+      grandTotal,
       status: 'pending',
       paymentMethod: finalPaymentMethod,
       paymentStatus: finalPaymentStatus,
-      transactionId: isPaidOnline ? (transactionId || 'UPI-' + Date.now()) : '',
+      transactionId: isPaidOnline ? (transactionId || 'ONLINE-' + Date.now()) : '',
       paidAt: isPaidOnline ? new Date() : null,
     });
+
+    // Increment coupon usage count if applied
+    if (couponCode) {
+      const Offer = require('../models/Offer');
+      await Offer.findOneAndUpdate(
+        { restaurant: restaurant.owner, code: couponCode },
+        { $inc: { usageCount: 1 } }
+      ).catch((e) => console.error('Coupon count increment error:', e.message));
+    }
 
     const populatedOrder = await Order.findById(order._id).populate('items.dish');
 
@@ -371,6 +412,8 @@ const getOrderInvoice = async (req, res) => {
           address: restaurant?.address || '',
           contactNumber: restaurant?.contactNumber || '',
           upiId: upiId,
+          invoiceSettings: restaurant?.invoiceSettings,
+          branding: restaurant?.branding,
         },
         billing: {
           subtotal: order.subtotal,
@@ -555,6 +598,8 @@ const getTableInvoice = async (req, res) => {
           address: restaurant.address,
           contactNumber: restaurant.contactNumber,
           upiId: upiId,
+          invoiceSettings: restaurant.invoiceSettings,
+          branding: restaurant.branding,
         },
         items: consolidatedItems,
         subtotal,

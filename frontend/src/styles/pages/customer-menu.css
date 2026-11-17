@@ -1,0 +1,32 @@
+/* ==========================================================================
+   Customer Menu Channel & Bucket Styles
+   ========================================================================== */
+
+.customer-menu-shell {
+  min-height: 100vh;
+  background-color: #f8fafc; /* slate-50 */
+  color: #0f172a;            /* slate-900 */
+}
+
+/* Category Quick-Jump Pill Rail */
+.category-pill-rail {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.category-pill-rail::-webkit-scrollbar {
+  display: none;
+}
+
+/* Floating Bottom Sticky Checkout Bucket */
+.floating-order-bucket {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 -4px 20px -2px rgba(0, 0, 0, 0.08);
+}

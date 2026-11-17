@@ -63,6 +63,9 @@ const restaurantRoutes = require('./routes/restaurantRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const dishRoutes = require('./routes/dishRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const agencyRoutes = require('./routes/agencyRoutes');
+const offerRoutes = require('./routes/offerRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
 // Mount Routes
 app.use('/api/auth', authRoutes);
@@ -70,6 +73,9 @@ app.use('/api/restaurant', restaurantRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/dishes', dishRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/agency', agencyRoutes);
+app.use('/api/offers', offerRoutes);
+app.use('/api/payment', paymentRoutes);
 
 const path = require('path');
 

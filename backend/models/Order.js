@@ -30,7 +30,24 @@ const OrderSchema = new mongoose.Schema(
     },
     tableNumber: {
       type: String,
-      required: [true, 'Please specify a table number'],
+      default: 'Table 1',
+    },
+    orderType: {
+      type: String,
+      enum: ['dine_in', 'company_delivery', 'takeaway'],
+      default: 'dine_in',
+    },
+    companyName: {
+      type: String,
+      default: '',
+    },
+    deliveryAddress: {
+      type: String,
+      default: '',
+    },
+    deskNumber: {
+      type: String,
+      default: '',
     },
     customerName: {
       type: String,
@@ -49,6 +66,20 @@ const OrderSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    discount: {
+      type: Number,
+      default: 0,
+    },
+    couponCode: {
+      type: String,
+      default: '',
+    },
+    grandTotal: {
+      type: Number,
+      default: function () {
+        return Math.max(0, (this.subtotal || 0) - (this.discount || 0));
+      },
+    },
     status: {
       type: String,
       enum: ['pending', 'accepted', 'served', 'completed', 'paid'],
@@ -56,7 +87,7 @@ const OrderSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ['cash', 'upi', 'card', 'unpaid'],
+      enum: ['cash', 'upi', 'card', 'online_cashfree', 'unpaid'],
       default: 'unpaid',
     },
     paymentStatus: {
@@ -67,6 +98,18 @@ const OrderSchema = new mongoose.Schema(
     transactionId: {
       type: String,
       default: '',
+    },
+    cashfreeOrderId: {
+      type: String,
+      default: '',
+    },
+    cashfreePaymentSessionId: {
+      type: String,
+      default: '',
+    },
+    paymentDetails: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
     },
     paidAt: {
       type: Date,

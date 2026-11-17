@@ -8,7 +8,9 @@ const { uploadImage } = require('../config/cloudinary');
 // @access  Private
 const getDishes = async (req, res) => {
   try {
-    const dishes = await Dish.find({ owner: req.user._id }).populate('category', 'name');
+    const dishes = await Dish.find({ owner: req.user._id })
+      .populate('category', 'name')
+      .populate('comboItems.dish', 'name price image isVeg');
     res.status(200).json({ success: true, count: dishes.length, data: dishes });
   } catch (error) {
     console.error('Fetch dishes error:', error.message);
@@ -27,7 +29,9 @@ const getPublicDishes = async (req, res) => {
       ownerId = restaurant.owner;
     }
 
-    const dishes = await Dish.find({ owner: ownerId, isAvailable: true }).populate('category', 'name');
+    const dishes = await Dish.find({ owner: ownerId, isAvailable: true })
+      .populate('category', 'name')
+      .populate('comboItems.dish', 'name price image isVeg');
     res.status(200).json({ success: true, count: dishes.length, data: dishes });
   } catch (error) {
     console.error('Fetch public dishes error:', error.message);
@@ -40,7 +44,18 @@ const getPublicDishes = async (req, res) => {
 // @access  Private
 const createDish = async (req, res) => {
   try {
-    const { category, name, image, price, description, isVeg, isAvailable } = req.body;
+    const { 
+      category, 
+      name, 
+      image, 
+      price, 
+      description, 
+      isVeg, 
+      isAvailable,
+      isCombo,
+      comboItems,
+      originalPrice,
+    } = req.body;
 
     if (!category || !name || price === undefined) {
       return res.status(400).json({ success: false, message: 'Please provide category, name, and price' });
@@ -67,9 +82,14 @@ const createDish = async (req, res) => {
       description: description || '',
       isVeg: isVeg !== undefined ? isVeg : true,
       isAvailable: isAvailable !== undefined ? isAvailable : true,
+      isCombo: Boolean(isCombo),
+      comboItems: Array.isArray(comboItems) ? comboItems : [],
+      originalPrice: originalPrice !== undefined ? Number(originalPrice) : 0,
     });
 
-    const populatedDish = await Dish.findById(dish._id).populate('category', 'name');
+    const populatedDish = await Dish.findById(dish._id)
+      .populate('category', 'name')
+      .populate('comboItems.dish', 'name price image isVeg');
     res.status(201).json({ success: true, data: populatedDish });
   } catch (error) {
     console.error('Create dish error:', error.message);
@@ -82,7 +102,18 @@ const createDish = async (req, res) => {
 // @access  Private
 const updateDish = async (req, res) => {
   try {
-    const { category, name, image, price, description, isVeg, isAvailable } = req.body;
+    const { 
+      category, 
+      name, 
+      image, 
+      price, 
+      description, 
+      isVeg, 
+      isAvailable,
+      isCombo,
+      comboItems,
+      originalPrice,
+    } = req.body;
     let dish = await Dish.findById(req.params.id);
 
     if (!dish) {
@@ -114,9 +145,14 @@ const updateDish = async (req, res) => {
     if (description !== undefined) dish.description = description;
     if (isVeg !== undefined) dish.isVeg = isVeg;
     if (isAvailable !== undefined) dish.isAvailable = isAvailable;
+    if (isCombo !== undefined) dish.isCombo = Boolean(isCombo);
+    if (comboItems !== undefined && Array.isArray(comboItems)) dish.comboItems = comboItems;
+    if (originalPrice !== undefined) dish.originalPrice = Number(originalPrice);
 
     await dish.save();
-    const populatedDish = await Dish.findById(dish._id).populate('category', 'name');
+    const populatedDish = await Dish.findById(dish._id)
+      .populate('category', 'name')
+      .populate('comboItems.dish', 'name price image isVeg');
 
     res.status(200).json({ success: true, data: populatedDish });
   } catch (error) {

@@ -48,7 +48,7 @@ export const SocketProvider = ({ children }) => {
     // Connect to server (proxy will handle it or default back)
     const socketUrl = window.location.origin;
     const newSocket = io(socketUrl, {
-      transports: ['websocket'],
+      transports: ['polling', 'websocket'],
       autoConnect: true,
     });
 

@@ -1,0 +1,15 @@
+/* ==========================================================================
+   Offers & Coupon Engine Styles
+   ========================================================================== */
+
+.coupon-dashed-badge {
+  border: 1px dashed #cbd5e1;
+  background-color: #f8fafc;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.coupon-dashed-badge:hover {
+  border-color: #6366f1;
+  background-color: #ffffff;
+}

@@ -16,6 +16,7 @@
     "autoprefixer": "^10.4.16",
     "lucide-react": "^0.292.0",
     "postcss": "^8.4.31",
+    "qr-menu-saas-root": "file:..",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.18.0",

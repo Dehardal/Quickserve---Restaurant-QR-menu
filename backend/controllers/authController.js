@@ -47,6 +47,7 @@ const registerUser = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role,
         restaurant: {
           _id: restaurant._id,
           name: restaurant.name,
@@ -93,6 +94,7 @@ const loginUser = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      role: user.role,
       restaurant: restaurant ? {
         _id: restaurant._id,
         name: restaurant.name,

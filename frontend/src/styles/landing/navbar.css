@@ -1,0 +1,49 @@
+/* ==========================================================================
+   Landing Navbar Styles (Compact & Interactive Glassmorphism)
+   ========================================================================== */
+
+.landing-navbar-container {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.landing-navbar-scrolled {
+  background-color: rgba(2, 6, 23, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+}
+
+.nav-pill-link {
+  position: relative;
+  padding: 0.375rem 0.875rem;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #94a3b8;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-pill-link:hover {
+  color: #ffffff;
+  background-color: rgba(30, 41, 59, 0.6);
+}
+
+.nav-pill-link:active {
+  transform: scale(0.96);
+}
+
+.nav-demo-btn {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(51, 65, 85, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.2s ease;
+}
+
+.nav-demo-btn:hover {
+  border-color: rgba(99, 102, 241, 0.5);
+  background: rgba(30, 41, 59, 0.9);
+  color: #ffffff;
+  transform: translateY(-1px);
+}

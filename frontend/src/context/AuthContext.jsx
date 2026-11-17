@@ -54,9 +54,9 @@ export const AuthProvider = ({ children }) => {
       if (data.success) {
         localStorage.setItem('token', data.token);
         setToken(data.token);
-        setUser({ _id: data._id, name: data.name, email: data.email });
+        setUser({ _id: data._id, name: data.name, email: data.email, role: data.role });
         setRestaurant(data.restaurant);
-        return { success: true };
+        return { success: true, role: data.role };
       } else {
         return { success: false, message: data.message };
       }
@@ -78,9 +78,9 @@ export const AuthProvider = ({ children }) => {
       if (data.success) {
         localStorage.setItem('token', data.token);
         setToken(data.token);
-        setUser({ _id: data._id, name: data.name, email: data.email });
+        setUser({ _id: data._id, name: data.name, email: data.email, role: data.role });
         setRestaurant(data.restaurant);
-        return { success: true };
+        return { success: true, role: data.role };
       } else {
         return { success: false, message: data.message };
       }

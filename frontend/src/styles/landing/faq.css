@@ -1,0 +1,19 @@
+/* ==========================================================================
+   FAQ Section Styles
+   ========================================================================== */
+
+.faq-item-open {
+  background-color: rgba(15, 23, 42, 0.95);
+  border-color: rgba(71, 85, 105, 0.9);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+}
+
+.faq-item-closed {
+  background-color: rgba(15, 23, 42, 0.5);
+  border-color: rgba(51, 65, 85, 0.7);
+}
+
+.faq-item-closed:hover {
+  border-color: rgba(99, 102, 241, 0.35);
+  background-color: rgba(15, 23, 42, 0.7);
+}

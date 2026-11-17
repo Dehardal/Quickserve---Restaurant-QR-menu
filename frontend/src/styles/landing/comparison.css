@@ -1,0 +1,18 @@
+/* ==========================================================================
+   Comparison Section Styles
+   ========================================================================== */
+
+.comparison-table-wrapper {
+  background-color: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(51, 65, 85, 0.8);
+  border-radius: 1.5rem;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+}
+
+.comparison-row {
+  transition: background-color 0.15s ease;
+}
+
+.comparison-row:hover {
+  background-color: rgba(30, 41, 59, 0.4);
+}

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Utensils, Mail, Lock, User, Store, Loader2, AlertCircle } from 'lucide-react';
+import { Utensils, Mail, Lock, User, Store, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 
 const Signup = () => {
-  const { register } = useAuth();
+  const { register, token, user } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -39,22 +39,57 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
       {/* Background soft ambient decor */}
       <div className="absolute top-0 left-0 right-0 h-[320px] bg-gradient-to-b from-brand-50/50 to-transparent -z-10"></div>
       <div className="absolute top-[20%] left-[20%] w-[400px] h-[400px] bg-brand-50/30 rounded-full blur-3xl -z-10 animate-pulse-slow"></div>
 
-      <div className="w-full max-w-md bg-white border border-slate-200/80 p-8 rounded-2xl shadow-premium flex flex-col gap-6 animate-slide-up">
-        {/* Branding header */}
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center shadow-md shadow-brand-500/10">
-            <Utensils className="w-5 h-5 text-white" />
-          </div>
-          <div className="text-center">
-            <h2 className="text-xl font-extrabold tracking-tight text-slate-900">Create your account</h2>
-            <p className="text-xs text-slate-400 mt-1.5 font-medium">Start your digital QR menu SaaS journey</p>
-          </div>
+      <div className="w-full max-w-md flex flex-col gap-3 relative z-10">
+        {/* Return to Home */}
+        <div className="flex items-center justify-between px-1">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to QuickServe Home</span>
+          </Link>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
+            14-Day Free Trial
+          </span>
         </div>
+
+        <div className="bg-white border border-slate-200/80 p-8 rounded-2xl shadow-premium flex flex-col gap-6 animate-slide-up">
+          {/* Branding header */}
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center shadow-md shadow-brand-500/10">
+              <Utensils className="w-5 h-5 text-white" />
+            </div>
+            <div className="text-center">
+              <h2 className="text-xl font-extrabold tracking-tight text-slate-900">Create your account</h2>
+              <p className="text-xs text-slate-400 mt-1.5 font-medium">Start your digital QR menu SaaS journey</p>
+            </div>
+          </div>
+
+          {/* Already logged in alert */}
+          {token && user && (
+            <div className="bg-brand-50/80 border border-brand-100 p-3.5 rounded-xl flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <span className="text-[11px] font-bold text-brand-900 block truncate">
+                  Logged in as {user.name}
+                </span>
+                <span className="text-[10px] text-brand-700 block truncate">
+                  {user.email}
+                </span>
+              </div>
+              <Link
+                to={user.role === 'superadmin' ? '/agency' : '/dashboard'}
+                className="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-[11px] font-bold rounded-lg transition shrink-0 shadow-sm"
+              >
+                Open Dashboard →
+              </Link>
+            </div>
+          )}
 
         {/* Error Alert */}
         {error && (
@@ -151,7 +186,8 @@ const Signup = () => {
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 };
 
 export default Signup;

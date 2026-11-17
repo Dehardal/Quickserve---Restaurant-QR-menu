@@ -330,8 +330,10 @@ const InvoiceModal = ({
           ` : ''}
 
           <div class="footer">
-            Thank you for dining with us! Please visit again.<br/>
-            Bill generated via QuickServe Digital POS
+            ${restaurant?.invoiceSettings?.invoiceFooterNote || 'Thank you for dining with us! Please visit again.'}<br/>
+            ${restaurant?.invoiceSettings?.businessLegalName ? `<div style="font-weight: 700; margin-top: 4px;">${restaurant.invoiceSettings.businessLegalName}</div>` : ''}
+            ${restaurant?.invoiceSettings?.gstNumber ? `<div>GSTIN: ${restaurant.invoiceSettings.gstNumber}</div>` : ''}
+            ${restaurant?.invoiceSettings?.fssaiNumber ? `<div>FSSAI Lic: ${restaurant.invoiceSettings.fssaiNumber}</div>` : ''}
           </div>
         </body>
       </html>
@@ -428,7 +430,7 @@ const InvoiceModal = ({
                 <Store className="w-5 h-5" />
               </div>
               <h2 className="text-xl font-black text-slate-900 tracking-tight uppercase">
-                {restaurant.name || 'QuickServe Restaurant'}
+                {restaurant.name || 'Restaurant'}
               </h2>
               {restaurant.address && (
                 <p className="text-xs text-slate-500 max-w-xs mx-auto mt-0.5">{restaurant.address}</p>
@@ -557,8 +559,10 @@ const InvoiceModal = ({
             )}
 
             {/* 7. Receipt Footer Note */}
-            <div className="text-center text-[10px] text-slate-400 uppercase tracking-widest pt-2 border-t border-slate-200">
-              Thank you for dining with us! Please visit again.
+            <div className="text-center text-[10px] text-slate-500 uppercase tracking-wider pt-2 border-t border-slate-200 space-y-0.5">
+              <p>{restaurant?.invoiceSettings?.invoiceFooterNote || 'Thank you for dining with us! Please visit again.'}</p>
+              {restaurant?.invoiceSettings?.gstNumber && <p>GSTIN: {restaurant.invoiceSettings.gstNumber}</p>}
+              {restaurant?.invoiceSettings?.fssaiNumber && <p>FSSAI: {restaurant.invoiceSettings.fssaiNumber}</p>}
             </div>
 
           </div>

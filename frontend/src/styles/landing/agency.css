@@ -1,0 +1,16 @@
+/* ==========================================================================
+   Agency Showcase Styles
+   ========================================================================== */
+
+.agency-showcase-box {
+  background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.12), transparent 50%),
+              linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 27, 75, 0.3) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7);
+}
+
+.agency-terminal {
+  background-color: #020617;
+  border: 1px solid rgba(51, 65, 85, 0.8);
+  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.6);
+}

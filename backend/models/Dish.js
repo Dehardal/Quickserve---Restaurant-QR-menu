@@ -39,6 +39,35 @@ const DishSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    isCombo: {
+      type: Boolean,
+      default: false,
+    },
+    comboItems: [
+      {
+        dish: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Dish',
+        },
+        name: {
+          type: String,
+          default: '',
+        },
+        quantity: {
+          type: Number,
+          default: 1,
+          min: 1,
+        },
+        price: {
+          type: Number,
+          default: 0,
+        },
+      },
+    ],
+    originalPrice: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,

@@ -1,0 +1,16 @@
+/* ==========================================================================
+   Interactive Demo Modal Styles
+   ========================================================================== */
+
+.demo-modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.demo-modal-dialog {
+  background-color: #0f172a;
+  border: 1px solid rgba(51, 65, 85, 0.8);
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8),
+              0 0 0 1px rgba(99, 102, 241, 0.1);
+}

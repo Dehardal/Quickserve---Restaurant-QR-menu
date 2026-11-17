@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {
+  resolveDomain,
   getRestaurantProfile,
   getPublicRestaurantProfile,
   updateRestaurantProfile,
@@ -9,7 +10,10 @@ const {
 } = require('../controllers/restaurantController');
 const { protect } = require('../middleware/authMiddleware');
 
-// Private routes
+// Public tenant resolution (for custom domains)
+router.get('/resolve-domain', resolveDomain);
+
+// Private routes for logged in owner
 router.get('/profile', protect, getRestaurantProfile);
 router.put('/profile', protect, updateRestaurantProfile);
 router.get('/qr', protect, generateTableQR);

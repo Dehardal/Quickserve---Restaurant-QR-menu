@@ -1,0 +1,30 @@
+/* ==========================================================================
+   QR Studio & Printable Standee Styles
+   ========================================================================== */
+
+.qr-studio-shell {
+  background-color: #f8fafc;
+}
+
+/* Print Specific Rules for Folded Table Tent Standees */
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  #printable-tent-card,
+  #printable-tent-card * {
+    visibility: visible !important;
+  }
+  #printable-tent-card {
+    position: fixed !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    box-shadow: none !important;
+    border: 2px solid #000000 !important;
+    width: 320px !important;
+    max-width: 100% !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+}
