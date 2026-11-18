@@ -52,7 +52,7 @@ const LandingNavbar = ({ onOpenDemo }) => {
       className={`fixed top-0 left-0 right-0 z-40 landing-navbar-container ${
         scrolled
           ? 'landing-navbar-scrolled'
-          : 'bg-transparent border-b border-transparent'
+          : 'bg-slate-50/80 backdrop-blur-md border-b border-slate-200/60'
       }`}
     >
       <div className="max-w-7xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
@@ -66,17 +66,17 @@ const LandingNavbar = ({ onOpenDemo }) => {
             <Utensils className="w-4 h-4" />
           </div>
           <div className="flex flex-col">
-            <span className="font-black text-base tracking-tight text-white leading-none font-outfit">
+            <span className="font-black text-base tracking-tight text-slate-900 leading-none font-outfit">
               QuickServe
             </span>
-            <span className="text-[9px] font-bold uppercase tracking-wider text-brand-400 mt-0.5 leading-none">
+            <span className="text-[9px] font-bold uppercase tracking-wider text-brand-600 mt-0.5 leading-none">
               Digital Menu Engine
             </span>
           </div>
         </Link>
 
         {/* 5 Compact Nav Links with Hover Pill Indicator */}
-        <nav className="hidden md:flex items-center gap-1 bg-slate-900/60 p-1 rounded-full border border-slate-800/80 backdrop-blur-md shadow-inner">
+        <nav className="hidden md:flex items-center gap-1 bg-slate-100/90 p-1 rounded-full border border-slate-200/90 shadow-inner">
           {navItems.map((item) => {
             const isActive = activeHash === item.href;
             return (
@@ -86,8 +86,8 @@ const LandingNavbar = ({ onOpenDemo }) => {
                 onClick={(e) => handleNavClick(e, item.href)}
                 className={`nav-pill-link ${
                   isActive
-                    ? 'text-white bg-slate-800/90 shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'text-brand-600 bg-white shadow-sm font-bold'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 {item.label}
@@ -101,17 +101,17 @@ const LandingNavbar = ({ onOpenDemo }) => {
           {/* Live Customer Menu Simulator */}
           <button
             onClick={onOpenDemo}
-            className="nav-demo-btn px-3 py-1.5 text-xs font-bold text-slate-300 rounded-xl flex items-center gap-1.5 cursor-pointer"
+            className="nav-demo-btn px-3 py-1.5 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
             title="Preview customer mobile menu simulator"
           >
-            <Play className="w-3 h-3 text-brand-400 fill-brand-400" />
+            <Play className="w-3 h-3 text-brand-600 fill-brand-600" />
             <span>Live Demo</span>
           </button>
 
           {isLoggedIn ? (
             <Link
               to={dashboardPath}
-              className="px-3.5 py-1.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl shadow-md shadow-brand-500/20 transition flex items-center gap-1.5 transform hover:-translate-y-0.5"
+              className="px-3.5 py-1.5 bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold rounded-xl shadow-md shadow-brand-500/20 transition flex items-center gap-1.5 transform hover:-translate-y-0.5"
             >
               {user?.role === 'superadmin' ? (
                 <Server className="w-3.5 h-3.5" />
@@ -125,7 +125,7 @@ const LandingNavbar = ({ onOpenDemo }) => {
             <div className="flex items-center gap-2">
               <Link
                 to="/login"
-                className="px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition"
+                className="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition"
               >
                 Sign In
               </Link>
@@ -143,7 +143,7 @@ const LandingNavbar = ({ onOpenDemo }) => {
         {/* Mobile Hamburger Button */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-900/80 transition"
+          className="md:hidden p-2 text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-100 transition"
           aria-label="Toggle mobile menu"
         >
           {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -152,29 +152,29 @@ const LandingNavbar = ({ onOpenDemo }) => {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-slate-950/95 backdrop-blur-xl border-b border-slate-800 px-6 py-5 space-y-4 animate-slide-up shadow-2xl">
+        <div className="md:hidden bg-white/98 backdrop-blur-xl border-b border-slate-200 px-6 py-5 space-y-4 animate-slide-up shadow-xl">
           <nav className="flex flex-col gap-1">
             {navItems.map((item) => (
               <a
                 key={item.label}
                 href={item.href}
                 onClick={(e) => handleNavClick(e, item.href)}
-                className="py-2 px-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-900/60 rounded-xl transition"
+                className="py-2 px-3 text-sm font-semibold text-slate-700 hover:text-brand-600 hover:bg-slate-50 rounded-xl transition"
               >
                 {item.label}
               </a>
             ))}
           </nav>
 
-          <div className="pt-3 border-t border-slate-800/80 flex flex-col gap-2">
+          <div className="pt-3 border-t border-slate-200 flex flex-col gap-2">
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
                 onOpenDemo();
               }}
-              className="w-full py-2.5 text-xs font-bold text-slate-200 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-center gap-2"
+              className="w-full py-2.5 text-xs font-bold text-slate-700 bg-slate-100 border border-slate-200 rounded-xl flex items-center justify-center gap-2"
             >
-              <Play className="w-3.5 h-3.5 text-brand-400 fill-brand-400" />
+              <Play className="w-3.5 h-3.5 text-brand-600 fill-brand-600" />
               <span>Interactive Customer Demo</span>
             </button>
 
@@ -193,7 +193,7 @@ const LandingNavbar = ({ onOpenDemo }) => {
                 <Link
                   to="/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="py-2.5 text-center text-xs font-semibold text-slate-300 bg-slate-900/60 rounded-xl"
+                  className="py-2.5 text-center text-xs font-semibold text-slate-700 bg-slate-100 rounded-xl"
                 >
                   Sign In
                 </Link>

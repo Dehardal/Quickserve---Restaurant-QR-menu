@@ -1,29 +1,22 @@
 /* ==========================================================================
-   Landing Hero Styles
+   Landing Hero Styles (Clean Light Slate-50 Theme)
    ========================================================================== */
 
-.hero-pill-badge {
-  background-color: rgba(15, 23, 42, 0.85);
-  border: 1px solid rgba(51, 65, 85, 0.7);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
 .hero-mockup-window {
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(2, 6, 23, 0.98) 100%);
-  border: 1px solid rgba(51, 65, 85, 0.8);
-  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7);
+  background: #ffffff;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(15, 23, 42, 0.04);
 }
 
 .hero-metric-card {
-  background-color: rgba(15, 23, 42, 0.55);
-  border: 1px solid rgba(51, 65, 85, 0.6);
-  backdrop-filter: blur(8px);
+  background-color: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
   transition: all 0.25s ease;
 }
 
 .hero-metric-card:hover {
-  border-color: rgba(99, 102, 241, 0.35);
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 8px 24px -4px rgba(99, 102, 241, 0.08);
   transform: translateY(-2px);
 }

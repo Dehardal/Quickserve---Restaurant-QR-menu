@@ -1,12 +1,11 @@
 /* ==========================================================================
-   Food Businesses Showcase Styles
+   Food Businesses Showcase Styles (Clean Light Slate-50 Theme)
    ========================================================================== */
 
 .business-showcase-box {
-  background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.12), transparent 50%),
-              linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 27, 75, 0.3) 100%);
-  border: 1px solid rgba(99, 102, 241, 0.3);
-  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.02);
 }
 
 .business-dispatcher {

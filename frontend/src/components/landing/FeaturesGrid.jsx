@@ -91,13 +91,13 @@ const features = [
 
 const FeaturesGrid = () => {
   return (
-    <section id="features" className="py-12 sm:py-16 px-6 sm:px-12 max-w-7xl mx-auto border-t border-slate-900/80">
+    <section id="features" className="py-12 sm:py-16 px-6 sm:px-12 max-w-7xl mx-auto border-t border-slate-200">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto space-y-3">
-        <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-outfit">
+        <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight font-outfit">
           Everything Your Food Business Needs
         </h2>
-        <p className="text-sm sm:text-base text-slate-400">
+        <p className="text-sm sm:text-base text-slate-600">
           Built from the ground up for busy cafes, quick-serve counters, dine-in restaurants, sweet shops, and cloud kitchens.
         </p>
       </div>
@@ -109,7 +109,7 @@ const FeaturesGrid = () => {
           return (
             <div
               key={idx}
-              className="p-7 rounded-3xl bg-slate-900/70 border border-slate-800/80 hover:border-slate-700/80 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-brand-500/5 group text-left flex flex-col justify-between"
+              className="p-7 rounded-3xl bg-white border border-slate-200/90 hover:border-brand-300 transition-all duration-300 shadow-soft hover:shadow-xl hover:shadow-brand-500/5 group text-left flex flex-col justify-between"
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -118,25 +118,25 @@ const FeaturesGrid = () => {
                   >
                     <Icon className="w-6 h-6" />
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
                     {feat.badge}
                   </span>
                 </div>
 
-                <h3 className="text-lg font-bold text-white group-hover:text-brand-300 transition-colors font-outfit">
+                <h3 className="text-lg font-bold text-slate-900 group-hover:text-brand-600 transition-colors font-outfit">
                   {feat.title}
                 </h3>
 
-                <p className="text-xs text-slate-400 leading-relaxed">
+                <p className="text-xs text-slate-600 leading-relaxed">
                   {feat.desc}
                 </p>
               </div>
 
               {/* Feature Points */}
-              <div className="mt-6 pt-4 border-t border-slate-800/60 space-y-2">
+              <div className="mt-6 pt-4 border-t border-slate-100 space-y-2">
                 {feat.points.map((pt, pIdx) => (
-                  <div key={pIdx} className="flex items-start gap-2 text-[11px] text-slate-300">
-                    <Check className="w-3.5 h-3.5 text-brand-400 shrink-0 mt-0.5" />
+                  <div key={pIdx} className="flex items-start gap-2 text-[11px] text-slate-700">
+                    <Check className="w-3.5 h-3.5 text-brand-600 shrink-0 mt-0.5" />
                     <span>{pt}</span>
                   </div>
                 ))}

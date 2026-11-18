@@ -36,13 +36,13 @@ const testimonials = [
 
 const TestimonialsSection = () => {
   return (
-    <section className="py-12 sm:py-16 px-6 sm:px-12 max-w-7xl mx-auto border-t border-slate-900/80">
+    <section className="py-12 sm:py-16 px-6 sm:px-12 max-w-7xl mx-auto border-t border-slate-200">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto space-y-3">
-        <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-outfit">
+        <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight font-outfit">
           Loved by Restaurants That Value Direct Revenue
         </h2>
-        <p className="text-sm sm:text-base text-slate-400">
+        <p className="text-sm sm:text-base text-slate-600">
           Join hundreds of cafe owners, sweet shop founders, cloud kitchens, and dine-in restaurants who took control of their customer relationships.
         </p>
       </div>
@@ -54,36 +54,36 @@ const TestimonialsSection = () => {
           return (
             <div
               key={idx}
-              className="p-8 rounded-3xl bg-slate-900/70 border border-slate-800/80 hover:border-slate-700/80 transition-all flex flex-col justify-between shadow-sm relative group"
+              className="p-8 rounded-3xl bg-white border border-slate-200 hover:border-brand-200 transition-all flex flex-col justify-between shadow-soft hover:shadow-lg relative group"
             >
               <div className="space-y-4">
                 {/* Rating Stars & Metric Pill */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1 text-amber-400">
                     {[...Array(t.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-amber-400" />
+                      <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
                     ))}
                   </div>
-                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold">
                     {t.metric}
                   </span>
                 </div>
 
                 {/* Quote text */}
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed italic">
+                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed italic">
                   "{t.quote}"
                 </p>
               </div>
 
               {/* Author info */}
-              <div className="pt-6 mt-6 border-t border-slate-800/80 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/20 flex items-center justify-center font-bold">
+              <div className="pt-6 mt-6 border-t border-slate-100 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 border border-brand-200 flex items-center justify-center font-bold">
                   <Icon className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-white font-outfit">{t.name}</h4>
-                  <p className="text-[11px] text-slate-400">{t.role}</p>
-                  <p className="text-[10px] text-brand-300 font-medium">{t.restaurant}</p>
+                  <h4 className="text-sm font-bold text-slate-900 font-outfit">{t.name}</h4>
+                  <p className="text-[11px] text-slate-500">{t.role}</p>
+                  <p className="text-[10px] text-brand-600 font-semibold">{t.restaurant}</p>
                 </div>
               </div>
             </div>

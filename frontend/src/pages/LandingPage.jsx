@@ -18,7 +18,7 @@ const LandingPage = () => {
   const [demoModalOpen, setDemoModalOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-brand-600 selection:text-white relative overflow-x-hidden">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-brand-600 selection:text-white relative overflow-x-hidden">
       {/* 1. Sticky Navigation */}
       <LandingNavbar onOpenDemo={() => setDemoModalOpen(true)} />
 

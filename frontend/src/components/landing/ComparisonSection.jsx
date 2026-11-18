@@ -49,58 +49,58 @@ const ComparisonSection = () => {
   ];
 
   return (
-    <section id="comparison" className="py-12 sm:py-16 px-6 sm:px-12 max-w-7xl mx-auto border-t border-slate-900/80">
+    <section id="comparison" className="py-12 sm:py-16 px-6 sm:px-12 max-w-7xl mx-auto border-t border-slate-200">
       <div className="text-center max-w-3xl mx-auto space-y-3">
-        <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-outfit">
+        <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight font-outfit">
           Aggregator Monopoly vs Your Brand
         </h2>
-        <p className="text-sm sm:text-base text-slate-400">
-          See why over 1,200+ restaurants, cloud kitchens, and franchise groups are switching from delivery marketplace monopolies to direct white-label ordering.
+        <p className="text-sm sm:text-base text-slate-600">
+          See why over 1,200+ restaurants, cloud kitchens, and food groups are switching from delivery marketplace monopolies to direct customer ordering.
         </p>
       </div>
 
       {/* Comparison Table */}
       <div className="mt-10 overflow-x-auto">
-        <div className="min-w-[680px] bg-slate-900/80 rounded-3xl border border-slate-800 overflow-hidden shadow-2xl">
+        <div className="min-w-[680px] bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-premium">
           <table className="w-full text-left text-xs sm:text-sm">
             <thead>
-              <tr className="border-b border-slate-800 text-[11px] uppercase tracking-wider bg-slate-950/60">
-                <th className="p-5 sm:p-6 text-slate-400 font-bold w-1/4">Key Capability</th>
-                <th className="p-5 sm:p-6 text-rose-400 font-bold w-3/8 bg-rose-950/10">
+              <tr className="border-b border-slate-200 text-[11px] uppercase tracking-wider bg-slate-50">
+                <th className="p-5 sm:p-6 text-slate-700 font-bold w-1/4">Key Capability</th>
+                <th className="p-5 sm:p-6 text-rose-700 font-bold w-3/8 bg-rose-50/60">
                   <span className="flex items-center gap-1.5">
-                    <XCircle className="w-4 h-4 text-rose-400" />
+                    <XCircle className="w-4 h-4 text-rose-600" />
                     Third-Party Food Apps
                   </span>
                 </th>
-                <th className="p-5 sm:p-6 text-emerald-400 font-bold w-3/8 bg-emerald-950/20">
+                <th className="p-5 sm:p-6 text-emerald-800 font-bold w-3/8 bg-emerald-50/60">
                   <span className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                     QuickServe Platform
                   </span>
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-slate-100">
               {comparisonRows.map((row, idx) => (
                 <tr
                   key={idx}
-                  className={`hover:bg-slate-800/40 transition-colors ${
-                    row.highlight ? 'bg-slate-900/50' : ''
+                  className={`hover:bg-slate-50 transition-colors ${
+                    row.highlight ? 'bg-slate-50/40' : ''
                   }`}
                 >
-                  <td className="p-5 sm:p-6 font-bold text-slate-200">
+                  <td className="p-5 sm:p-6 font-bold text-slate-900">
                     {row.metric}
                   </td>
-                  <td className="p-5 sm:p-6 text-slate-400 bg-rose-950/5 leading-relaxed">
+                  <td className="p-5 sm:p-6 text-slate-600 bg-rose-50/20 leading-relaxed">
                     <div className="flex items-start gap-2">
-                      <span className="text-rose-400 font-bold">✕</span>
+                      <span className="text-rose-600 font-bold">✕</span>
                       <span>{row.aggregator}</span>
                     </div>
                   </td>
-                  <td className="p-5 sm:p-6 text-slate-100 font-semibold bg-emerald-950/10 leading-relaxed">
+                  <td className="p-5 sm:p-6 text-slate-900 font-semibold bg-emerald-50/20 leading-relaxed">
                     <div className="flex items-start gap-2">
-                      <span className="text-emerald-400 font-bold">✓</span>
-                      <span className={row.highlight ? 'text-emerald-300 font-bold' : ''}>
+                      <span className="text-emerald-600 font-bold">✓</span>
+                      <span className={row.highlight ? 'text-emerald-800 font-bold' : ''}>
                         {row.quickserve}
                       </span>
                     </div>

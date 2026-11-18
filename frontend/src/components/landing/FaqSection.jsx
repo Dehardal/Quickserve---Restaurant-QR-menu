@@ -41,13 +41,13 @@ const FaqSection = () => {
   };
 
   return (
-    <section id="faq" className="py-12 sm:py-16 px-6 sm:px-12 max-w-4xl mx-auto border-t border-slate-900/80">
+    <section id="faq" className="py-12 sm:py-16 px-6 sm:px-12 max-w-4xl mx-auto border-t border-slate-200">
       {/* Header */}
       <div className="text-center space-y-3">
-        <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-outfit">
+        <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight font-outfit">
           Frequently Asked Questions
         </h2>
-        <p className="text-sm sm:text-base text-slate-400">
+        <p className="text-sm sm:text-base text-slate-600">
           Everything you need to know about setting up your digital QR menu platform.
         </p>
       </div>
@@ -61,8 +61,8 @@ const FaqSection = () => {
               key={idx}
               className={`rounded-2xl border transition-all overflow-hidden ${
                 isOpen
-                  ? 'bg-slate-900 border-slate-700 shadow-md'
-                  : 'bg-slate-900/50 border-slate-800/80 hover:border-slate-700'
+                  ? 'bg-white border-brand-300 shadow-sm'
+                  : 'bg-white border-slate-200 hover:border-slate-300'
               }`}
             >
               <button
@@ -70,18 +70,18 @@ const FaqSection = () => {
                 className="w-full p-5 sm:p-6 text-left flex items-center justify-between gap-4 cursor-pointer"
                 aria-expanded={isOpen}
               >
-                <span className="text-sm sm:text-base font-bold text-white font-outfit">
+                <span className="text-sm sm:text-base font-bold text-slate-900 font-outfit">
                   {faq.q}
                 </span>
                 <ChevronDown
                   className={`w-5 h-5 text-slate-400 shrink-0 transition-transform duration-200 ${
-                    isOpen ? 'rotate-180 text-brand-400' : ''
+                    isOpen ? 'rotate-180 text-brand-600' : ''
                   }`}
                 />
               </button>
 
               {isOpen && (
-                <div className="px-5 pb-5 sm:px-6 sm:pb-6 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-slate-800/60 pt-4 animate-fadeIn">
+                <div className="px-5 pb-5 sm:px-6 sm:pb-6 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-4 animate-fadeIn">
                   {faq.a}
                 </div>
               )}

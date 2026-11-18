@@ -90,13 +90,13 @@ const ChannelsSection = ({ onOpenDemo }) => {
   const Icon = current.icon;
 
   return (
-    <section id="channels" className="py-12 sm:py-16 px-6 sm:px-12 max-w-7xl mx-auto border-t border-slate-900/80">
+    <section id="channels" className="py-12 sm:py-16 px-6 sm:px-12 max-w-7xl mx-auto border-t border-slate-200">
       {/* Section Header */}
       <div className="text-center max-w-3xl mx-auto space-y-3">
-        <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-outfit">
+        <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight font-outfit">
           Three Channels, One Unified Kitchen Engine
         </h2>
-        <p className="text-sm sm:text-base text-slate-400">
+        <p className="text-sm sm:text-base text-slate-600">
           Whether guests are seated at a table, working in a corporate tech park, or grabbing takeout,
           QuickServe orchestrates every order seamlessly into your kitchen display.
         </p>
@@ -104,7 +104,7 @@ const ChannelsSection = ({ onOpenDemo }) => {
 
       {/* 3-Channel Switcher Tabs */}
       <div className="flex items-center justify-center gap-2 mt-8 overflow-x-auto pb-2">
-        <div className="p-1.5 rounded-2xl bg-slate-900 border border-slate-800 flex items-center gap-2 shadow-inner">
+        <div className="p-1.5 rounded-2xl bg-slate-100 border border-slate-200 flex items-center gap-2 shadow-inner">
           {channels.map((ch) => {
             const TabIcon = ch.icon;
             const isActive = ch.id === activeTab;
@@ -114,11 +114,11 @@ const ChannelsSection = ({ onOpenDemo }) => {
                 onClick={() => setActiveTab(ch.id)}
                 className={`flex items-center gap-2.5 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
                   isActive
-                    ? 'bg-brand-600 text-white shadow-md shadow-brand-500/20'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200/80'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
                 }`}
               >
-                <TabIcon className="w-4 h-4 shrink-0" />
+                <TabIcon className="w-4 h-4 shrink-0 text-brand-600" />
                 <span>{ch.title}</span>
               </button>
             );
@@ -127,32 +127,32 @@ const ChannelsSection = ({ onOpenDemo }) => {
       </div>
 
       {/* Active Channel Feature Showcase Card */}
-      <div className="mt-8 rounded-3xl bg-slate-900/90 border border-slate-800 p-6 sm:p-12 shadow-2xl relative overflow-hidden">
+      <div className="mt-8 rounded-3xl bg-white border border-slate-200 p-6 sm:p-12 shadow-premium relative overflow-hidden">
         {/* Subtle background glow */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-brand-50/50 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
           {/* Channel Details (7 Cols) */}
           <div className="lg:col-span-7 space-y-6 text-left">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-400 border border-brand-500/20 flex items-center justify-center shadow-xs">
+              <div className="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 border border-brand-200 flex items-center justify-center shadow-xs">
                 <Icon className="w-6 h-6" />
               </div>
               <div>
-                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-slate-800 text-brand-400 border border-slate-700">
+                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-brand-50 text-brand-700 border border-brand-200">
                   {current.badge}
                 </span>
-                <h3 className="text-xl sm:text-2xl font-black text-white mt-1 font-outfit">
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 mt-1 font-outfit">
                   {current.title}
                 </h3>
               </div>
             </div>
 
-            <p className="text-xs sm:text-sm font-semibold text-brand-300">
+            <p className="text-xs sm:text-sm font-bold text-brand-600">
               {current.tagline}
             </p>
 
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
               {current.description}
             </p>
 
@@ -160,8 +160,8 @@ const ChannelsSection = ({ onOpenDemo }) => {
             <div className="space-y-3 pt-2">
               {current.highlights.map((item, idx) => (
                 <div key={idx} className="flex items-start gap-3">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <span className="text-xs text-slate-200 font-medium leading-relaxed">{item}</span>
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span className="text-xs text-slate-700 font-medium leading-relaxed">{item}</span>
                 </div>
               ))}
             </div>
@@ -179,26 +179,26 @@ const ChannelsSection = ({ onOpenDemo }) => {
 
           {/* Standee & Ordering Visual Preview (5 Cols) */}
           <div className="lg:col-span-5 flex justify-center">
-            <div className="w-full max-w-sm rounded-3xl bg-slate-950 border-2 border-slate-800 p-6 shadow-2xl flex flex-col items-center text-center space-y-4">
+            <div className="w-full max-w-sm rounded-3xl bg-slate-50 border-2 border-slate-200 p-6 shadow-soft flex flex-col items-center text-center space-y-4">
               {/* Standee Top Notch */}
-              <div className="w-12 h-1.5 rounded-full bg-slate-800"></div>
+              <div className="w-12 h-1.5 rounded-full bg-slate-300"></div>
 
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white font-black text-lg shadow-md">
                 <Utensils className="w-6 h-6 text-white" />
               </div>
 
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-brand-400 block">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-brand-600 block">
                   {current.mockup.type}
                 </span>
-                <h4 className="text-base font-black text-white uppercase tracking-tight mt-0.5">
+                <h4 className="text-base font-black text-slate-900 uppercase tracking-tight mt-0.5 font-outfit">
                   {current.mockup.headline}
                 </h4>
-                <p className="text-[10px] text-slate-400">{current.mockup.tag}</p>
+                <p className="text-[10px] text-slate-500">{current.mockup.tag}</p>
               </div>
 
               {/* QR Code Graphic with Centered Logo */}
-              <div className="w-48 h-48 bg-white rounded-2xl p-3 flex items-center justify-center shadow-inner relative group">
+              <div className="w-48 h-48 bg-white rounded-2xl p-3 flex items-center justify-center shadow-sm border border-slate-200 relative group">
                 <QrCode className="w-full h-full text-slate-900" />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 shadow-md flex items-center justify-center">
@@ -210,14 +210,14 @@ const ChannelsSection = ({ onOpenDemo }) => {
               </div>
 
               {/* Status Badge */}
-              <div className="w-full p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] space-y-1">
-                <div className="flex justify-between text-slate-300 font-medium">
+              <div className="w-full p-2.5 rounded-xl bg-white border border-slate-200 text-[11px] space-y-1 shadow-xs">
+                <div className="flex justify-between text-slate-700 font-medium">
                   <span>Routing:</span>
-                  <span className="text-emerald-400 font-bold">{current.mockup.detail1}</span>
+                  <span className="text-emerald-700 font-bold">{current.mockup.detail1}</span>
                 </div>
-                <div className="flex justify-between text-slate-400 text-[10px]">
+                <div className="flex justify-between text-slate-500 text-[10px]">
                   <span>Status:</span>
-                  <span>{current.mockup.detail2}</span>
+                  <span className="font-medium text-slate-700">{current.mockup.detail2}</span>
                 </div>
               </div>
 
