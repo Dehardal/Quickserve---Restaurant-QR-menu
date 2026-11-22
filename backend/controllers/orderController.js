@@ -1,8 +1,93 @@
 const Order = require('../models/Order');
 const Dish = require('../models/Dish');
 const Restaurant = require('../models/Restaurant');
+const InventoryItem = require('../models/InventoryItem');
+const StockLog = require('../models/StockLog');
 const jwt = require('jsonwebtoken');
 const QRCode = require('qrcode');
+
+// Helper to generate a daily sequential token number (e.g. C-001 or T-001)
+const generateDailyToken = async (ownerId, prefix = 'T') => {
+  try {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const count = await Order.countDocuments({
+      restaurant: ownerId,
+      createdAt: { $gte: startOfDay },
+    });
+    return `${prefix}-${String(count + 1).padStart(3, '0')}`;
+  } catch (err) {
+    return `${prefix}-${Math.floor(100 + Math.random() * 900)}`;
+  }
+};
+
+// Helper to automatically deduct inventory when an order is placed
+const deductInventoryForOrder = async (order, ownerId, io) => {
+  try {
+    for (const item of order.items) {
+      const dish = await Dish.findById(item.dish);
+      if (!dish) continue;
+
+      // 1. Direct dish stock deduction
+      if (dish.trackStock) {
+        const prevStock = dish.stockQuantity || 0;
+        const newStock = Math.max(0, prevStock - item.quantity);
+        dish.stockQuantity = newStock;
+
+        // Auto-disable if sold out
+        if (newStock === 0) {
+          dish.isAvailable = false;
+        }
+        await dish.save();
+
+        await StockLog.create({
+          restaurant: ownerId,
+          dish: dish._id,
+          itemName: dish.name,
+          changeType: 'sale_deduction',
+          quantityChanged: -item.quantity,
+          previousStock: prevStock,
+          newStock: newStock,
+          order: order._id,
+          notes: `Sold via Order #${order.tokenNumber || order._id.toString().slice(-4)}`,
+        });
+
+        if (io && newStock === 0) {
+          io.to(ownerId.toString()).emit('dish_availability_changed', {
+            dishId: dish._id,
+            isAvailable: false,
+            stockQuantity: 0,
+          });
+        }
+      }
+
+      // 2. Linked raw inventory item deduction (if mapped)
+      if (dish.linkedInventoryItem) {
+        const invItem = await InventoryItem.findById(dish.linkedInventoryItem);
+        if (invItem) {
+          const prevInv = invItem.currentStock || 0;
+          const newInv = Math.max(0, prevInv - item.quantity);
+          invItem.currentStock = newInv;
+          await invItem.save();
+
+          await StockLog.create({
+            restaurant: ownerId,
+            inventoryItem: invItem._id,
+            itemName: invItem.name,
+            changeType: 'sale_deduction',
+            quantityChanged: -item.quantity,
+            previousStock: prevInv,
+            newStock: newInv,
+            order: order._id,
+            notes: `Used in ${dish.name} (Order #${order.tokenNumber || order._id.toString().slice(-4)})`,
+          });
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Inventory deduction error:', err.message);
+  }
+};
 
 // @desc    Place a new order (Public for customer menu scanning QR)
 // @route   POST /api/orders
@@ -104,11 +189,16 @@ const createOrder = async (req, res) => {
     const couponCode = req.body.couponCode ? req.body.couponCode.trim().toUpperCase() : '';
     const grandTotal = Math.max(0, subtotal - discountAmount);
 
+    // Generate daily token number (e.g. T-001 or C-001)
+    const tokenPrefix = orderType === 'takeaway' || orderType === 'counter' ? 'C' : 'T';
+    const tokenNumber = await generateDailyToken(restaurant.owner, tokenPrefix);
+
     // Create the order
     const order = await Order.create({
       restaurant: restaurant.owner, // store owner id to tie to Dashboard
       tableNumber: tableNumber || (orderType === 'takeaway' ? 'Takeaway Counter' : 'Table 1'),
       orderType,
+      tokenNumber,
       companyName: companyName || '',
       deskNumber: deskNumber || '',
       deliveryAddress: deliveryAddress || '',
@@ -136,10 +226,14 @@ const createOrder = async (req, res) => {
       ).catch((e) => console.error('Coupon count increment error:', e.message));
     }
 
-    const populatedOrder = await Order.findById(order._id).populate('items.dish');
-
     // Emit Real-Time Order Socket Event to Owner Room
     const io = req.app.get('socketio');
+
+    // Automatically deduct inventory and notify if dishes go out of stock
+    await deductInventoryForOrder(order, restaurant.owner, io);
+
+    const populatedOrder = await Order.findById(order._id).populate('items.dish');
+
     if (io) {
       // Room name is owner's user ID
       const ownerRoom = restaurant.owner.toString();
@@ -619,8 +713,95 @@ const getTableInvoice = async (req, res) => {
   }
 };
 
+// @desc    Fast POS Counter Order Punch (Private for cashier/manager)
+// @route   POST /api/orders/pos
+// @access  Private
+const createPosOrder = async (req, res) => {
+  try {
+    const ownerId = req.user._id;
+    const {
+      tableNumber = 'Counter Desk',
+      orderType = 'counter',
+      customerName = 'Walk-in Guest',
+      customerMobile = '',
+      items,
+      discount = 0,
+      paymentMethod = 'cash',
+      paymentStatus = 'paid',
+      specialInstructions = '',
+    } = req.body;
+
+    if (!items || items.length === 0) {
+      return res.status(400).json({ success: false, message: 'Please add at least one dish to the order' });
+    }
+
+    let subtotal = 0;
+    const orderItems = [];
+
+    for (const item of items) {
+      const dish = await Dish.findById(item.dish);
+      if (!dish) {
+        return res.status(400).json({ success: false, message: `Dish ID ${item.dish} not found` });
+      }
+
+      const itemPrice = dish.price;
+      const quantity = Number(item.quantity) || 1;
+      subtotal += itemPrice * quantity;
+
+      orderItems.push({
+        dish: dish._id,
+        name: dish.name,
+        price: itemPrice,
+        quantity,
+      });
+    }
+
+    const discountAmount = Number(discount) || 0;
+    const grandTotal = Math.max(0, subtotal - discountAmount);
+    const tokenNumber = await generateDailyToken(ownerId, orderType === 'counter' ? 'C' : 'T');
+
+    const order = await Order.create({
+      restaurant: ownerId,
+      tableNumber: tableNumber || (orderType === 'takeaway' ? 'Takeaway Counter' : 'Counter Desk'),
+      orderType,
+      tokenNumber,
+      source: 'pos_counter',
+      customerName: customerName.trim() || 'Walk-in Guest',
+      customerMobile: customerMobile.trim() || '',
+      specialInstructions: specialInstructions || '',
+      items: orderItems,
+      subtotal,
+      discount: discountAmount,
+      grandTotal,
+      status: 'accepted', // Counter orders are confirmed upon punch
+      paymentMethod,
+      paymentStatus: paymentStatus || 'paid',
+      transactionId: paymentMethod !== 'cash' ? `POS-${Date.now()}` : '',
+      paidAt: paymentStatus === 'paid' ? new Date() : null,
+    });
+
+    const io = req.app.get('socketio');
+    // Deduct inventory automatically
+    await deductInventoryForOrder(order, ownerId, io);
+
+    const populatedOrder = await Order.findById(order._id).populate('items.dish');
+
+    if (io) {
+      const ownerRoom = ownerId.toString();
+      io.to(ownerRoom).emit('new_order', populatedOrder);
+      console.log(`POS new_order emitted to owner room ${ownerRoom}`);
+    }
+
+    res.status(201).json({ success: true, data: populatedOrder });
+  } catch (error) {
+    console.error('POS order error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   createOrder,
+  createPosOrder,
   getOrders,
   updateOrderStatus,
   getTableOrders,

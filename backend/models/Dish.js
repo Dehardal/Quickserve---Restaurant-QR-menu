@@ -39,6 +39,24 @@ const DishSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    trackStock: {
+      type: Boolean,
+      default: false,
+    },
+    stockQuantity: {
+      type: Number,
+      default: 0,
+      min: [0, 'Stock cannot be negative'],
+    },
+    lowStockThreshold: {
+      type: Number,
+      default: 5,
+      min: [0, 'Threshold cannot be negative'],
+    },
+    linkedInventoryItem: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'InventoryItem',
+    },
     isCombo: {
       type: Boolean,
       default: false,

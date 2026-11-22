@@ -16,6 +16,8 @@ import CustomerMenu from './pages/CustomerMenu';
 import AgencyPortal from './pages/AgencyPortal';
 import Offers from './pages/Offers';
 import QrCenter from './pages/QrCenter';
+import PosTerminal from './pages/PosTerminal';
+import Inventory from './pages/Inventory';
 import LandingPage from './pages/LandingPage';
 import LegalPages from './pages/LegalPages';
 
@@ -129,6 +131,14 @@ const App = () => {
                 }
               />
               <Route
+                path="/pos"
+                element={
+                  <ProtectedRoute>
+                    <PosTerminal />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/orders"
                 element={
                   <ProtectedRoute>
@@ -149,6 +159,14 @@ const App = () => {
                 element={
                   <ProtectedRoute>
                     <Dishes />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/inventory"
+                element={
+                  <ProtectedRoute>
+                    <Inventory />
                   </ProtectedRoute>
                 }
               />

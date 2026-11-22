@@ -268,8 +268,19 @@ const CustomerMenu = () => {
         fetchTableOrders();
       });
 
+      socket.on('dish_availability_changed', (data) => {
+        setDishes((prev) =>
+          prev.map((d) =>
+            d._id === data.dishId
+              ? { ...d, isAvailable: data.isAvailable, stockQuantity: data.stockQuantity }
+              : d
+          )
+        );
+      });
+
       return () => {
         socket.off('table_order_updated');
+        socket.off('dish_availability_changed');
       };
     }
   }, [socket, tableNumber, restaurantId]);

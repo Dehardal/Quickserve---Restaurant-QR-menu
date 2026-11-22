@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import { useAuth } from '../context/AuthContext';
@@ -10,13 +11,16 @@ import {
   TrendingUp, 
   Clock, 
   CheckCircle2, 
-  ArrowUpRight 
+  ArrowUpRight,
+  AlertTriangle,
+  Boxes
 } from 'lucide-react';
 
 const Dashboard = () => {
   const { token, restaurant } = useAuth();
   const [orders, setOrders] = useState([]);
   const [dishesCount, setDishesCount] = useState(0);
+  const [inventoryAlerts, setInventoryAlerts] = useState({ rawAlerts: [], dishAlerts: [], totalAlerts: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,6 +42,15 @@ const Dashboard = () => {
         const dishesData = await dishesRes.json();
         if (dishesData.success) {
           setDishesCount(dishesData.data.length);
+        }
+
+        // Fetch Low Stock Inventory Alerts
+        const alertsRes = await fetch('/api/inventory/alerts', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const alertsData = await alertsRes.json();
+        if (alertsData.success) {
+          setInventoryAlerts(alertsData.data);
         }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -125,6 +138,38 @@ const Dashboard = () => {
               <span>Real-time channel active</span>
             </div>
           </div>
+
+          {/* Low Stock Real-Time Alert Banner */}
+          {inventoryAlerts.totalAlerts > 0 && (
+            <div className="bg-amber-50/70 border border-amber-200/90 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fadeIn">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-amber-900">
+                    Stock Attention Needed ({inventoryAlerts.totalAlerts} items low or out of stock)
+                  </h3>
+                  <p className="text-[11px] text-amber-700">
+                    {[
+                      ...inventoryAlerts.dishAlerts.map((d) => `${d.name} (${d.stockQuantity} left)`),
+                      ...inventoryAlerts.rawAlerts.map((r) => `${r.name} (${r.currentStock} ${r.unit})`),
+                    ]
+                      .slice(0, 3)
+                      .join(' · ')}
+                    {inventoryAlerts.totalAlerts > 3 && ` and ${inventoryAlerts.totalAlerts - 3} more...`}
+                  </p>
+                </div>
+              </div>
+
+              <Link
+                to="/inventory"
+                className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold whitespace-nowrap shadow-xs transition"
+              >
+                Manage Inventory & Restock
+              </Link>
+            </div>
+          )}
 
           {/* KPI Dashboard Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   createOrder,
+  createPosOrder,
   getOrders,
   updateOrderStatus,
   getTableOrders,
@@ -23,6 +24,7 @@ router.put('/:id/payment', updateOrderPayment);
 router.get('/:id/invoice', getOrderInvoice);
 
 // Private routes for restaurant owners to fetch and manage order state
+router.post('/pos', protect, createPosOrder);
 router.get('/', protect, getOrders);
 router.put('/:id/status', protect, updateOrderStatus);
 

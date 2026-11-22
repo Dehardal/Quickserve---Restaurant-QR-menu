@@ -66,6 +66,7 @@ const orderRoutes = require('./routes/orderRoutes');
 const agencyRoutes = require('./routes/agencyRoutes');
 const offerRoutes = require('./routes/offerRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const inventoryRoutes = require('./routes/inventoryRoutes');
 
 // Mount Routes
 app.use('/api/auth', authRoutes);
@@ -76,6 +77,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/agency', agencyRoutes);
 app.use('/api/offers', offerRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/inventory', inventoryRoutes);
 
 const path = require('path');
 

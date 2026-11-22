@@ -34,6 +34,9 @@ const Dishes = () => {
   const [isVeg, setIsVeg] = useState(true);
   const [isAvailable, setIsAvailable] = useState(true);
   const [image, setImage] = useState('');
+  const [trackStock, setTrackStock] = useState(false);
+  const [stockQuantity, setStockQuantity] = useState('0');
+  const [lowStockThreshold, setLowStockThreshold] = useState('5');
 
   const [errorMsg, setErrorMsg] = useState('');
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -85,6 +88,9 @@ const Dishes = () => {
     setIsVeg(true);
     setIsAvailable(true);
     setImage('');
+    setTrackStock(false);
+    setStockQuantity('0');
+    setLowStockThreshold('5');
     setErrorMsg('');
     setIsOpen(true);
   };
@@ -99,6 +105,9 @@ const Dishes = () => {
     setIsVeg(dish.isVeg);
     setIsAvailable(dish.isAvailable);
     setImage(dish.image || '');
+    setTrackStock(dish.trackStock || false);
+    setStockQuantity((dish.stockQuantity !== undefined ? dish.stockQuantity : 0).toString());
+    setLowStockThreshold((dish.lowStockThreshold !== undefined ? dish.lowStockThreshold : 5).toString());
     setErrorMsg('');
     setIsOpen(true);
   };
@@ -143,6 +152,9 @@ const Dishes = () => {
           isVeg,
           isAvailable,
           image,
+          trackStock,
+          stockQuantity: Number(stockQuantity) || 0,
+          lowStockThreshold: Number(lowStockThreshold) || 5,
         }),
       });
 
@@ -286,7 +298,7 @@ const Dishes = () => {
                   <div className="p-5 flex-1 flex flex-col gap-2">
                     <div className="flex justify-between items-start gap-2">
                       <h4 className="font-extrabold text-slate-800 text-xs tracking-tight truncate leading-tight group-hover:text-brand-600 transition-colors">{dish.name}</h4>
-                      <span className="text-xs font-black text-brand-600">${dish.price.toFixed(2)}</span>
+                      <span className="text-xs font-black text-brand-600 font-mono">₹{dish.price.toFixed(2)}</span>
                     </div>
 
                     <p className="text-[10px] text-slate-400 leading-relaxed flex-1 line-clamp-2 h-7 font-medium">{dish.description || 'No custom details added.'}</p>
@@ -294,26 +306,42 @@ const Dishes = () => {
                     {/* Options Actions */}
                     <div className="flex items-center justify-between border-t border-slate-100 pt-3.5 mt-2.5">
                       {/* Availability status switcher */}
-                      <button
-                        onClick={() => handleToggleAvailability(dish)}
-                        className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[9px] font-extrabold uppercase tracking-wider transition-colors ${
-                          dish.isAvailable
-                            ? 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100'
-                            : 'bg-rose-50 text-rose-500 border-rose-100 hover:bg-rose-100'
-                        }`}
-                      >
-                        {dish.isAvailable ? (
-                          <>
-                            <Eye className="w-3 h-3" />
-                            <span>In Stock</span>
-                          </>
-                        ) : (
-                          <>
-                            <EyeOff className="w-3 h-3" />
-                            <span>Sold Out</span>
-                          </>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => handleToggleAvailability(dish)}
+                          className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[9px] font-extrabold uppercase tracking-wider transition-colors ${
+                            dish.isAvailable
+                              ? 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100'
+                              : 'bg-rose-50 text-rose-500 border-rose-100 hover:bg-rose-100'
+                          }`}
+                        >
+                          {dish.isAvailable ? (
+                            <>
+                              <Eye className="w-3 h-3" />
+                              <span>Available</span>
+                            </>
+                          ) : (
+                            <>
+                              <EyeOff className="w-3 h-3" />
+                              <span>Sold Out</span>
+                            </>
+                          )}
+                        </button>
+
+                        {dish.trackStock && (
+                          <span
+                            className={`px-2 py-0.5 rounded text-[9px] font-bold font-mono ${
+                              dish.stockQuantity <= 0
+                                ? 'bg-rose-100 text-rose-700'
+                                : dish.stockQuantity <= (dish.lowStockThreshold || 5)
+                                ? 'bg-amber-100 text-amber-700'
+                                : 'bg-slate-100 text-slate-600'
+                            }`}
+                          >
+                            {dish.stockQuantity <= 0 ? '0 Stock' : `${dish.stockQuantity} Left`}
+                          </span>
                         )}
-                      </button>
+                      </div>
 
                       <div className="flex items-center gap-1.5">
                         <button
@@ -479,6 +507,55 @@ const Dishes = () => {
                 isAvailable ? 'translate-x-5.5' : 'translate-x-0'
               }`}></span>
             </button>
+          </div>
+
+          {/* Real-time Inventory & Stock Tracking */}
+          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs font-bold text-slate-700">Track Real-Time Stock</span>
+                <span className="text-[9px] text-slate-400 font-semibold">
+                  Auto-decrement stock on each order & mark Sold Out when 0
+                </span>
+              </div>
+              <input
+                type="checkbox"
+                checked={trackStock}
+                onChange={(e) => setTrackStock(e.target.checked)}
+                className="w-4 h-4 rounded text-brand-600 focus:ring-brand-500 cursor-pointer"
+              />
+            </div>
+
+            {trackStock && (
+              <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200/80">
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                    Portions / Units in Stock *
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={stockQuantity}
+                    onChange={(e) => setStockQuantity(e.target.value)}
+                    placeholder="25"
+                    className="w-full px-3 py-1.5 rounded-lg text-xs bg-white border border-slate-200 text-slate-800 font-mono font-bold"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                    Low Stock Alert Level
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={lowStockThreshold}
+                    onChange={(e) => setLowStockThreshold(e.target.value)}
+                    placeholder="5"
+                    className="w-full px-3 py-1.5 rounded-lg text-xs bg-white border border-slate-200 text-slate-800 font-mono"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">

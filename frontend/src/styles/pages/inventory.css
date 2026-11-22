@@ -1,0 +1,35 @@
+/* ==========================================================================
+   Inventory Management Page Styles
+   ========================================================================== */
+
+.inventory-table-container {
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.inventory-table-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.inventory-table-container::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 4px;
+}
+
+.inventory-badge-low {
+  background-color: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.inventory-badge-out {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.inventory-badge-ok {
+  background-color: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}

@@ -55,6 +55,9 @@ const createDish = async (req, res) => {
       isCombo,
       comboItems,
       originalPrice,
+      trackStock,
+      stockQuantity,
+      lowStockThreshold,
     } = req.body;
 
     if (!category || !name || price === undefined) {
@@ -85,6 +88,9 @@ const createDish = async (req, res) => {
       isCombo: Boolean(isCombo),
       comboItems: Array.isArray(comboItems) ? comboItems : [],
       originalPrice: originalPrice !== undefined ? Number(originalPrice) : 0,
+      trackStock: Boolean(trackStock),
+      stockQuantity: stockQuantity !== undefined ? Number(stockQuantity) : 0,
+      lowStockThreshold: lowStockThreshold !== undefined ? Number(lowStockThreshold) : 5,
     });
 
     const populatedDish = await Dish.findById(dish._id)
@@ -113,6 +119,9 @@ const updateDish = async (req, res) => {
       isCombo,
       comboItems,
       originalPrice,
+      trackStock,
+      stockQuantity,
+      lowStockThreshold,
     } = req.body;
     let dish = await Dish.findById(req.params.id);
 
@@ -148,6 +157,9 @@ const updateDish = async (req, res) => {
     if (isCombo !== undefined) dish.isCombo = Boolean(isCombo);
     if (comboItems !== undefined && Array.isArray(comboItems)) dish.comboItems = comboItems;
     if (originalPrice !== undefined) dish.originalPrice = Number(originalPrice);
+    if (trackStock !== undefined) dish.trackStock = Boolean(trackStock);
+    if (stockQuantity !== undefined) dish.stockQuantity = Number(stockQuantity);
+    if (lowStockThreshold !== undefined) dish.lowStockThreshold = Number(lowStockThreshold);
 
     await dish.save();
     const populatedDish = await Dish.findById(dish._id)

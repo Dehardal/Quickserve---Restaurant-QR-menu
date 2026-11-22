@@ -12,7 +12,9 @@ import {
   LogOut,
   Server,
   ExternalLink,
-  Globe
+  Globe,
+  Store,
+  Boxes
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -23,9 +25,11 @@ const Sidebar = () => {
 
   const menuItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+    { name: 'Counter POS', path: '/pos', icon: Store },
     { name: 'Live Orders', path: '/orders', icon: ClipboardList },
     { name: 'Categories', path: '/categories', icon: Tag },
     { name: 'Menu Items', path: '/dishes', icon: Utensils },
+    { name: 'Inventory & Stock', path: '/inventory', icon: Boxes },
     { name: 'Offers & Promos', path: '/offers', icon: Ticket },
     { name: 'Table QR Studio', path: '/qr-center', icon: QrCode },
     { name: 'Branding & Settings', path: '/profile', icon: User },

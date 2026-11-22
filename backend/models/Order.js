@@ -34,8 +34,17 @@ const OrderSchema = new mongoose.Schema(
     },
     orderType: {
       type: String,
-      enum: ['dine_in', 'company_delivery', 'takeaway'],
+      enum: ['dine_in', 'company_delivery', 'takeaway', 'counter'],
       default: 'dine_in',
+    },
+    tokenNumber: {
+      type: String,
+      default: '',
+    },
+    source: {
+      type: String,
+      enum: ['qr_menu', 'pos_counter', 'kiosk'],
+      default: 'qr_menu',
     },
     companyName: {
       type: String,
@@ -51,11 +60,11 @@ const OrderSchema = new mongoose.Schema(
     },
     customerName: {
       type: String,
-      required: [true, 'Please add a customer name'],
+      default: 'Walk-in Guest',
     },
     customerMobile: {
       type: String,
-      required: [true, 'Please add a customer mobile number'],
+      default: '',
     },
     specialInstructions: {
       type: String,

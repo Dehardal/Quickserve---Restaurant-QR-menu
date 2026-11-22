@@ -232,7 +232,14 @@ const Orders = () => {
 
         <div className="flex justify-between items-start pl-1">
           <div className="flex flex-col">
-            <span className="text-sm font-black text-slate-800 tracking-tight">{order.tableNumber}</span>
+            <div className="flex items-center gap-1.5">
+              {order.tokenNumber && (
+                <span className="px-1.5 py-0.5 rounded bg-brand-50 text-brand-700 text-[10px] font-mono font-black border border-brand-200">
+                  {order.tokenNumber}
+                </span>
+              )}
+              <span className="text-sm font-black text-slate-800 tracking-tight">{order.tableNumber}</span>
+            </div>
             <span className="text-[10px] text-slate-400 font-bold uppercase">{order.customerName}</span>
           </div>
           <div className="text-right">
