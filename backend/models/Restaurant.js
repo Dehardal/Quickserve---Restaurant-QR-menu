@@ -64,11 +64,15 @@ const RestaurantSchema = new mongoose.Schema(
     branding: {
       primaryColor: {
         type: String,
-        default: '#f97316', // Default brand orange
+        default: '#4f46e5', // Brand Primary
+      },
+      secondaryColor: {
+        type: String,
+        default: '#312e81', // Brand Secondary
       },
       accentColor: {
         type: String,
-        default: '#ea580c',
+        default: '#06b6d4', // Brand Accent
       },
       tagline: {
         type: String,
@@ -85,6 +89,41 @@ const RestaurantSchema = new mongoose.Schema(
       fontFamily: {
         type: String,
         default: 'Inter',
+      },
+    },
+    // Feature Flags & Module Entitlements per Client
+    features: {
+      posTerminal: {
+        type: Boolean,
+        default: true,
+      },
+      inventoryManagement: {
+        type: Boolean,
+        default: true,
+      },
+      dineInOrdering: {
+        type: Boolean,
+        default: true,
+      },
+      takeawayOrdering: {
+        type: Boolean,
+        default: true,
+      },
+      corporateDelivery: {
+        type: Boolean,
+        default: true,
+      },
+      offersAndPromos: {
+        type: Boolean,
+        default: true,
+      },
+      onlinePayments: {
+        type: Boolean,
+        default: true,
+      },
+      liveKitchenDisplay: {
+        type: Boolean,
+        default: true,
       },
     },
     whiteLabel: {

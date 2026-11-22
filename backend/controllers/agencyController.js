@@ -29,6 +29,16 @@ const listClients = async (req, res) => {
           status: r.status || 'active',
           tables: r.tables || [],
           branding: r.branding,
+          features: r.features || {
+            posTerminal: true,
+            inventoryManagement: true,
+            dineInOrdering: true,
+            takeawayOrdering: true,
+            corporateDelivery: true,
+            offersAndPromos: true,
+            onlinePayments: true,
+            liveKitchenDisplay: true,
+          },
           whiteLabel: r.whiteLabel,
           invoiceSettings: r.invoiceSettings,
           owner: r.owner
@@ -72,7 +82,9 @@ const createClient = async (req, res) => {
       address,
       tables,
       primaryColor,
+      secondaryColor,
       accentColor,
+      features,
       upiId,
     } = req.body;
 
@@ -131,10 +143,21 @@ const createClient = async (req, res) => {
       tables: tables && tables.length ? tables : ['Table 1', 'Table 2', 'Table 3', 'Table 4', 'Table 5'],
       upiId: upiId || 'merchant@okaxis',
       branding: {
-        primaryColor: primaryColor || '#f97316',
-        accentColor: accentColor || '#ea580c',
+        primaryColor: primaryColor || '#4f46e5',
+        secondaryColor: secondaryColor || '#312e81',
+        accentColor: accentColor || '#06b6d4',
         tagline: 'Freshly Prepared, Served with Love',
         fontFamily: 'Inter',
+      },
+      features: features || {
+        posTerminal: true,
+        inventoryManagement: true,
+        dineInOrdering: true,
+        takeawayOrdering: true,
+        corporateDelivery: true,
+        offersAndPromos: true,
+        onlinePayments: true,
+        liveKitchenDisplay: true,
       },
       whiteLabel: {
         hidePlatformBranding: true,
@@ -249,6 +272,9 @@ const updateClient = async (req, res) => {
     if (invoiceSettings) {
       restaurant.invoiceSettings = { ...restaurant.invoiceSettings, ...invoiceSettings };
     }
+    if (req.body.features) {
+      restaurant.features = { ...restaurant.features, ...req.body.features };
+    }
 
     await restaurant.save();
 
@@ -336,10 +362,80 @@ const deleteClient = async (req, res) => {
   }
 };
 
+// @desc    Quick toggle client feature flags
+// @route   PUT /api/agency/restaurants/:id/features
+// @access  Private (SuperAdmin)
+const updateClientFeatures = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { features } = req.body;
+
+    const restaurant = await Restaurant.findById(id);
+    if (!restaurant) {
+      return res.status(404).json({ success: false, message: 'Restaurant not found' });
+    }
+
+    restaurant.features = { ...restaurant.features, ...features };
+    await restaurant.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Client features updated successfully',
+      data: restaurant.features,
+    });
+  } catch (error) {
+    console.error('Update features error:', error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Impersonate client owner to launch their portal
+// @route   POST /api/agency/impersonate/:id
+// @access  Private (SuperAdmin)
+const impersonateClient = async (req, res) => {
+  try {
+    const restaurant = await Restaurant.findById(req.params.id).populate('owner');
+    if (!restaurant || !restaurant.owner) {
+      return res.status(404).json({ success: false, message: 'Restaurant owner not found' });
+    }
+
+    const jwt = require('jsonwebtoken');
+    const token = jwt.sign(
+      { id: restaurant.owner._id },
+      process.env.JWT_SECRET || 'supersecretjwtkeyforrestaurantqrmenusaas',
+      { expiresIn: '12h' }
+    );
+
+    res.status(200).json({
+      success: true,
+      token,
+      user: {
+        _id: restaurant.owner._id,
+        name: restaurant.owner.name,
+        email: restaurant.owner.email,
+        role: restaurant.owner.role,
+      },
+      restaurant: {
+        _id: restaurant._id,
+        name: restaurant.name,
+        slug: restaurant.slug,
+        customDomain: restaurant.customDomain,
+        branding: restaurant.branding,
+        features: restaurant.features,
+      },
+    });
+  } catch (error) {
+    console.error('Impersonate client error:', error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   listClients,
   createClient,
   updateClient,
+  updateClientFeatures,
+  impersonateClient,
   getDnsGuide,
   deleteClient,
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { 
   Building2, 
@@ -20,21 +20,139 @@ import {
   Key, 
   X,
   Server,
-  DollarSign
+  DollarSign,
+  Sliders,
+  Store,
+  Boxes,
+  QrCode,
+  Truck,
+  Ticket,
+  CreditCard,
+  ChefHat,
+  Eye,
+  LogIn,
+  Search,
+  Filter
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+
+// Curated 3-Color Combined Palette Presets
+const COLOR_PRESETS = [
+  {
+    name: 'Modern Indigo',
+    primary: '#4f46e5',
+    secondary: '#312e81',
+    accent: '#06b6d4',
+  },
+  {
+    name: 'Sunset Amber',
+    primary: '#f97316',
+    secondary: '#7c2d12',
+    accent: '#eab308',
+  },
+  {
+    name: 'Emerald Cafe',
+    primary: '#059669',
+    secondary: '#064e3b',
+    accent: '#10b981',
+  },
+  {
+    name: 'Royal Velvet',
+    primary: '#e11d48',
+    secondary: '#881337',
+    accent: '#fb7185',
+  },
+  {
+    name: 'Mocha & Caramel',
+    primary: '#78350f',
+    secondary: '#451a03',
+    accent: '#d97706',
+  },
+  {
+    name: 'Cyber Neon',
+    primary: '#6366f1',
+    secondary: '#0f172a',
+    accent: '#10b981',
+  },
+  {
+    name: 'Rose Blossom',
+    primary: '#ec4899',
+    secondary: '#831843',
+    accent: '#f43f5e',
+  },
+];
+
+// Available system modules / features
+const SYSTEM_FEATURES = [
+  {
+    key: 'posTerminal',
+    name: 'Counter POS Terminal',
+    desc: 'Touchscreen cashier billing for walk-in orders & cash/UPI tender',
+    icon: Store,
+  },
+  {
+    key: 'inventoryManagement',
+    name: 'Inventory & Stock Management',
+    desc: 'Ingredient tracking, automatic stock deduction & sold-out protection',
+    icon: Boxes,
+  },
+  {
+    key: 'dineInOrdering',
+    name: 'Dine-In Table QR Ordering',
+    desc: 'Table tent QR scanning with multi-round order accumulation',
+    icon: QrCode,
+  },
+  {
+    key: 'takeawayOrdering',
+    name: 'Takeaway Counter Pickup',
+    desc: 'Customer QR ordering for counter pickup with daily token numbers',
+    icon: ShoppingBag,
+  },
+  {
+    key: 'corporateDelivery',
+    name: 'Corporate Office Delivery',
+    desc: 'Desk & building drop-off QR ordering for office campuses',
+    icon: Truck,
+  },
+  {
+    key: 'offersAndPromos',
+    name: 'Offers & Promo Codes',
+    desc: 'First-time user discounts, flat/percentage coupons, BOGO deals',
+    icon: Ticket,
+  },
+  {
+    key: 'onlinePayments',
+    name: 'Online UPI & Card Gateway',
+    desc: 'Instant direct checkout via UPI QR code or Cashfree payment gateway',
+    icon: CreditCard,
+  },
+  {
+    key: 'liveKitchenDisplay',
+    name: 'Live Kitchen Display (KDS)',
+    desc: 'Real-time WebSocket audio chime, ticket dispatching & print',
+    icon: ChefHat,
+  },
+];
 
 const AgencyPortal = () => {
-  const { user, token, logout } = useAuth();
+  const { user, token, logout, login } = useAuth();
+  const navigate = useNavigate();
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Filters & Search
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+
   // Modals
   const [showAddModal, setShowAddModal] = useState(false);
   const [dnsModalClient, setDnsModalClient] = useState(null);
-  const [editClientModal, setEditClientModal] = useState(null);
   const [dnsGuideData, setDnsGuideData] = useState(null);
+  const [editClientModal, setEditClientModal] = useState(null);
+  const [featuresModalClient, setFeaturesModalClient] = useState(null);
+  const [clientFeaturesState, setClientFeaturesState] = useState({});
+  const [openLauncherClient, setOpenLauncherClient] = useState(null);
   const [copiedText, setCopiedText] = useState(null);
 
   // Form state for Onboard New Restaurant
@@ -47,10 +165,21 @@ const AgencyPortal = () => {
     slug: '',
     contactNumber: '',
     address: '',
-    primaryColor: '#f97316',
-    accentColor: '#ea580c',
+    primaryColor: '#4f46e5',
+    secondaryColor: '#312e81',
+    accentColor: '#06b6d4',
     upiId: '',
     tableCount: 6,
+    features: {
+      posTerminal: true,
+      inventoryManagement: true,
+      dineInOrdering: true,
+      takeawayOrdering: true,
+      corporateDelivery: true,
+      offersAndPromos: true,
+      onlinePayments: true,
+      liveKitchenDisplay: true,
+    },
   });
   const [creating, setCreating] = useState(false);
   const [createSuccessMsg, setCreateSuccessMsg] = useState(null);
@@ -106,13 +235,85 @@ const AgencyPortal = () => {
     }
   };
 
+  // Open Features Modal for a Client
+  const openFeaturesModal = (client) => {
+    setFeaturesModalClient(client);
+    setClientFeaturesState(
+      client.features || {
+        posTerminal: true,
+        inventoryManagement: true,
+        dineInOrdering: true,
+        takeawayOrdering: true,
+        corporateDelivery: true,
+        offersAndPromos: true,
+        onlinePayments: true,
+        liveKitchenDisplay: true,
+      }
+    );
+  };
+
+  // Save Features for a Client
+  const handleSaveFeatures = async () => {
+    if (!featuresModalClient) return;
+    try {
+      const res = await fetch(`/api/agency/restaurants/${featuresModalClient._id}/features`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ features: clientFeaturesState }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setFeaturesModalClient(null);
+        fetchClients();
+      } else {
+        alert(json.message || 'Failed to update client features');
+      }
+    } catch (err) {
+      console.error('Update features error:', err);
+      alert('Error updating client features');
+    }
+  };
+
+  // Impersonate / Launch Client Portal
+  const handleImpersonate = async (clientId) => {
+    try {
+      const res = await fetch(`/api/agency/impersonate/${clientId}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const json = await res.json();
+      if (json.success) {
+        // Save impersonated session and navigate to dashboard in a new tab or current
+        localStorage.setItem('token', json.token);
+        localStorage.setItem('user', JSON.stringify(json.user));
+        if (json.restaurant) {
+          localStorage.setItem('restaurant', JSON.stringify(json.restaurant));
+        }
+        window.open('/dashboard', '_blank');
+      } else {
+        alert(json.message || 'Could not launch client portal');
+      }
+    } catch (err) {
+      console.error('Impersonate error:', err);
+      alert('Failed to launch portal');
+    }
+  };
+
   // Handle Client Creation
   const handleCreateClient = async (e) => {
     e.preventDefault();
     setCreating(true);
     setCreateSuccessMsg(null);
     try {
-      const tables = Array.from({ length: Number(newClient.tableCount) || 5 }, (_, i) => `Table ${i + 1}`);
+      const tables = Array.from(
+        { length: Number(newClient.tableCount) || 5 },
+        (_, i) => `Table ${i + 1}`
+      );
 
       const res = await fetch('/api/agency/restaurants', {
         method: 'POST',
@@ -139,10 +340,21 @@ const AgencyPortal = () => {
           slug: '',
           contactNumber: '',
           address: '',
-          primaryColor: '#f97316',
-          accentColor: '#ea580c',
+          primaryColor: '#4f46e5',
+          secondaryColor: '#312e81',
+          accentColor: '#06b6d4',
           upiId: '',
           tableCount: 6,
+          features: {
+            posTerminal: true,
+            inventoryManagement: true,
+            dineInOrdering: true,
+            takeawayOrdering: true,
+            corporateDelivery: true,
+            offersAndPromos: true,
+            onlinePayments: true,
+            liveKitchenDisplay: true,
+          },
         });
         fetchClients();
       } else {
@@ -155,7 +367,7 @@ const AgencyPortal = () => {
     }
   };
 
-  // Handle Client Status / Domain Update
+  // Handle Client Update
   const handleUpdateClient = async (e) => {
     e.preventDefault();
     if (!editClientModal) return;
@@ -176,6 +388,7 @@ const AgencyPortal = () => {
           address: editClientModal.address,
           upiId: editClientModal.upiId,
           branding: editClientModal.branding,
+          features: editClientModal.features,
         }),
       });
       const data = await res.json();
@@ -192,7 +405,11 @@ const AgencyPortal = () => {
 
   // Delete Client
   const handleDeleteClient = async (id, name) => {
-    if (!window.confirm(`Are you sure you want to permanently delete "${name}" and all their dishes, categories, and orders?`)) {
+    if (
+      !window.confirm(
+        `Are you sure you want to permanently delete "${name}" and all their dishes, categories, and orders?`
+      )
+    ) {
       return;
     }
 
@@ -212,6 +429,23 @@ const AgencyPortal = () => {
     }
   };
 
+  // Filtered clients
+  const filteredClients = useMemo(() => {
+    return clients.filter((c) => {
+      const q = searchQuery.toLowerCase();
+      const matchesSearch =
+        q === '' ||
+        c.name.toLowerCase().includes(q) ||
+        (c.customDomain && c.customDomain.toLowerCase().includes(q)) ||
+        (c.owner?.email && c.owner.email.toLowerCase().includes(q)) ||
+        (c.owner?.name && c.owner.name.toLowerCase().includes(q));
+
+      const matchesStatus = statusFilter === 'all' || c.status === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [clients, searchQuery, statusFilter]);
+
   // Total summary calculations
   const totalClients = clients.length;
   const activeClients = clients.filter((c) => c.status === 'active').length;
@@ -219,21 +453,21 @@ const AgencyPortal = () => {
   const totalOrders = clients.reduce((acc, c) => acc + (c.stats?.orders || 0), 0);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
-      {/* Top Navigation */}
-      <header className="h-16 border-b border-slate-800 bg-slate-900/80 backdrop-blur px-6 flex items-center justify-between sticky top-0 z-30">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans select-none">
+      {/* Top Header */}
+      <header className="h-16 border-b border-slate-800 bg-slate-900/90 backdrop-blur px-6 flex items-center justify-between sticky top-0 z-30">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-brand-500/20">
             <Server className="w-5 h-5 text-white" />
           </div>
           <div>
             <h1 className="font-bold text-base text-white tracking-tight flex items-center gap-2">
-              Agency Master Console
+              Master Admin Console
               <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/30">
                 Super Admin
               </span>
             </h1>
-            <p className="text-xs text-slate-400">White-Label Digital Menu Multi-Domain Engine</p>
+            <p className="text-xs text-slate-400">Multi-Tenant Client Portfolio & Feature Management</p>
           </div>
         </div>
 
@@ -243,32 +477,32 @@ const AgencyPortal = () => {
             className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-medium text-xs rounded-xl shadow-md shadow-brand-500/20 transition cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            Onboard Restaurant
+            <span>Onboard Restaurant</span>
           </button>
 
           <div className="h-6 w-px bg-slate-800 mx-1"></div>
 
           <div className="text-right hidden sm:block">
-            <p className="text-xs font-medium text-slate-200">{user?.name || 'Developer Admin'}</p>
+            <p className="text-xs font-medium text-slate-200">{user?.name || 'Super Admin'}</p>
             <p className="text-[10px] text-slate-400">{user?.email}</p>
           </div>
 
           <button
             onClick={logout}
-            className="px-3 py-1.5 text-xs text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition border border-transparent hover:border-red-500/20"
+            className="px-3 py-1.5 text-xs text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition border border-transparent hover:border-rose-500/20"
           >
             Logout
           </button>
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* Main Container */}
       <main className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6">
-        {/* Banner Alert if any */}
+        {/* Banner Alert */}
         {createSuccessMsg && (
           <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm flex items-center justify-between animate-fadeIn">
             <div className="flex items-center gap-3">
-              <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+              <CheckCircle2 className="w-5 h-5 shrink-0" />
               <span>{createSuccessMsg}</span>
             </div>
             <button onClick={() => setCreateSuccessMsg(null)} className="text-emerald-400 hover:text-white">
@@ -284,7 +518,7 @@ const AgencyPortal = () => {
               <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Client Brands</p>
               <h3 className="text-2xl font-black text-white mt-1">{totalClients}</h3>
               <p className="text-xs text-emerald-400 mt-1 flex items-center gap-1">
-                <Check className="w-3.5 h-3.5" /> {activeClients} live on server
+                <Check className="w-3.5 h-3.5" /> {activeClients} Active Clients
               </p>
             </div>
             <div className="w-12 h-12 rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/20 flex items-center justify-center">
@@ -298,7 +532,7 @@ const AgencyPortal = () => {
               <h3 className="text-2xl font-black text-white mt-1">
                 {clients.filter((c) => c.customDomain).length}
               </h3>
-              <p className="text-xs text-slate-400 mt-1">Branded client hostnames</p>
+              <p className="text-xs text-slate-400 mt-1">White-label hostnames</p>
             </div>
             <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center">
               <Globe className="w-6 h-6" />
@@ -309,7 +543,7 @@ const AgencyPortal = () => {
             <div>
               <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Total Menu Dishes</p>
               <h3 className="text-2xl font-black text-white mt-1">{totalDishes}</h3>
-              <p className="text-xs text-slate-400 mt-1">Across all clients</p>
+              <p className="text-xs text-slate-400 mt-1">Catalog items tracked</p>
             </div>
             <div className="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center">
               <UtensilsCrossed className="w-6 h-6" />
@@ -320,7 +554,7 @@ const AgencyPortal = () => {
             <div>
               <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Orders Processed</p>
               <h3 className="text-2xl font-black text-white mt-1">{totalOrders}</h3>
-              <p className="text-xs text-slate-400 mt-1">Live digital orders</p>
+              <p className="text-xs text-slate-400 mt-1">Direct digital volume</p>
             </div>
             <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center">
               <ShoppingBag className="w-6 h-6" />
@@ -328,22 +562,46 @@ const AgencyPortal = () => {
           </div>
         </div>
 
-        {/* Client Restaurants List */}
+        {/* Client Restaurants Section with Search & Filter */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+          <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-lg font-bold text-white tracking-tight">Onboarded Client Restaurants</h2>
+              <h2 className="text-lg font-bold text-white tracking-tight">Client Portfolio & Feature Entitlements</h2>
               <p className="text-xs text-slate-400 mt-0.5">
-                Each brand operates with its own custom domain, brand theme, and dedicated owner credentials.
+                Manage features, tri-color brand palettes, domains, and launch client portals directly.
               </p>
             </div>
-            <button
-              onClick={fetchClients}
-              className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition"
-              title="Refresh"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search client, domain or email..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 pr-3 py-1.5 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-brand-500 w-52 sm:w-64"
+                />
+              </div>
+
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-3 py-1.5 text-xs bg-slate-950 border border-slate-800 rounded-xl text-slate-300 focus:outline-none"
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active Only</option>
+                <option value="suspended">Suspended</option>
+              </select>
+
+              <button
+                onClick={fetchClients}
+                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition"
+                title="Refresh"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
           </div>
 
           {loading ? (
@@ -352,25 +610,25 @@ const AgencyPortal = () => {
               <p className="text-xs">Loading client portfolio...</p>
             </div>
           ) : error ? (
-            <div className="p-8 text-center text-red-400 space-y-2">
+            <div className="p-8 text-center text-rose-400 space-y-2">
               <AlertCircle className="w-6 h-6 mx-auto" />
               <p className="text-sm">{error}</p>
               <button
                 onClick={fetchClients}
-                className="text-xs px-3 py-1 bg-red-500/20 text-red-300 rounded-lg hover:bg-red-500/30"
+                className="text-xs px-3 py-1 bg-rose-500/20 text-rose-300 rounded-lg hover:bg-rose-500/30"
               >
                 Retry
               </button>
             </div>
-          ) : clients.length === 0 ? (
+          ) : filteredClients.length === 0 ? (
             <div className="p-16 text-center space-y-4">
               <div className="w-14 h-14 rounded-2xl bg-slate-800 text-slate-500 flex items-center justify-center mx-auto">
                 <Building2 className="w-7 h-7" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">No Client Restaurants Yet</h3>
+                <h3 className="text-base font-bold text-white">No Client Restaurants Found</h3>
                 <p className="text-xs text-slate-400 max-w-md mx-auto mt-1">
-                  Click "Onboard Restaurant" to deploy a digital menu system for your first restaurant client with their own custom domain.
+                  Click "Onboard Restaurant" to deploy a brand with custom domain & 3-color palette.
                 </p>
               </div>
               <button
@@ -387,161 +645,226 @@ const AgencyPortal = () => {
                 <thead>
                   <tr className="border-b border-slate-800 text-slate-400 uppercase font-semibold bg-slate-950/40">
                     <th className="p-4 pl-6">Restaurant Brand</th>
-                    <th className="p-4">Custom Domain / URL</th>
-                    <th className="p-4">Client Credentials</th>
-                    <th className="p-4">Brand Color</th>
-                    <th className="p-4 text-center">Menu / Orders</th>
+                    <th className="p-4">Domain / Slug</th>
+                    <th className="p-4">Owner Credentials</th>
+                    <th className="p-4">3-Color Brand Palette</th>
+                    <th className="p-4">Enabled Features</th>
                     <th className="p-4 text-center">Status</th>
-                    <th className="p-4 pr-6 text-right">Actions</th>
+                    <th className="p-4 pr-6 text-right">Launch & Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
-                  {clients.map((c) => (
-                    <tr key={c._id} className="hover:bg-slate-800/30 transition">
-                      {/* Name & Logo */}
-                      <td className="p-4 pl-6">
-                        <div className="flex items-center gap-3">
-                          {c.logo ? (
-                            <img src={c.logo} alt="" className="w-9 h-9 rounded-xl object-cover bg-slate-800" />
+                  {filteredClients.map((c) => {
+                    const feat = c.features || {};
+                    const primary = c.branding?.primaryColor || '#4f46e5';
+                    const secondary = c.branding?.secondaryColor || '#312e81';
+                    const accent = c.branding?.accentColor || '#06b6d4';
+
+                    return (
+                      <tr key={c._id} className="hover:bg-slate-800/30 transition">
+                        {/* Name & Logo */}
+                        <td className="p-4 pl-6">
+                          <div className="flex items-center gap-3">
+                            {c.logo ? (
+                              <img src={c.logo} alt="" className="w-9 h-9 rounded-xl object-cover bg-slate-800" />
+                            ) : (
+                              <div
+                                className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-sm"
+                                style={{ backgroundColor: primary }}
+                              >
+                                {c.name.charAt(0)}
+                              </div>
+                            )}
+                            <div>
+                              <span className="font-bold text-white text-sm block">{c.name}</span>
+                              <span className="text-[11px] text-slate-400">
+                                {c.tables?.length || 0} Tables · {c.stats?.dishes || 0} Dishes · {c.stats?.orders || 0} Orders
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Custom Domain / Slug */}
+                        <td className="p-4">
+                          {c.customDomain ? (
+                            <div className="space-y-1">
+                              <a
+                                href={`https://${c.customDomain}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="font-mono text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5 font-semibold"
+                              >
+                                <Globe className="w-3.5 h-3.5" />
+                                {c.customDomain}
+                                <ExternalLink className="w-3 h-3 text-slate-500" />
+                              </a>
+                              <button
+                                onClick={() => openDnsGuide(c)}
+                                className="text-[10px] text-slate-400 hover:text-amber-400 underline flex items-center gap-1"
+                              >
+                                DNS Guide
+                              </button>
+                            </div>
                           ) : (
-                            <div
-                              className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-sm"
-                              style={{ backgroundColor: c.branding?.primaryColor || '#f97316' }}
-                            >
-                              {c.name.charAt(0)}
+                            <div className="space-y-1">
+                              <span className="text-slate-400 font-mono text-[11px]">/{c.slug || c._id}</span>
+                              <br />
+                              <Link
+                                to={`/menu/${c._id}`}
+                                target="_blank"
+                                className="text-[10px] text-brand-400 hover:underline inline-flex items-center gap-1"
+                              >
+                                Preview Menu <ExternalLink className="w-2.5 h-2.5" />
+                              </Link>
                             </div>
                           )}
-                          <div>
-                            <span className="font-bold text-white text-sm block">{c.name}</span>
-                            <span className="text-[11px] text-slate-400">
-                              {c.tables?.length || 0} Tables • {c.contactNumber || 'No Phone'}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
+                        </td>
 
-                      {/* Custom Domain */}
-                      <td className="p-4">
-                        {c.customDomain ? (
-                          <div className="space-y-1">
-                            <a
-                              href={`https://${c.customDomain}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="font-mono text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5 font-semibold"
-                            >
-                              <Globe className="w-3.5 h-3.5" />
-                              {c.customDomain}
-                              <ExternalLink className="w-3 h-3 text-slate-500" />
-                            </a>
-                            <button
-                              onClick={() => openDnsGuide(c)}
-                              className="text-[10px] text-slate-400 hover:text-amber-400 underline flex items-center gap-1"
-                            >
-                              DNS Instructions
-                            </button>
+                        {/* Owner Credentials */}
+                        <td className="p-4">
+                          <div className="space-y-0.5">
+                            <p className="text-slate-200 font-medium">{c.owner?.name || 'Owner'}</p>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono text-[11px] text-slate-400">{c.owner?.email}</span>
+                              <button
+                                onClick={() => handleCopy(c.owner?.email, `email_${c._id}`)}
+                                className="text-slate-500 hover:text-slate-300"
+                                title="Copy Email"
+                              >
+                                {copiedText === `email_${c._id}` ? (
+                                  <Check className="w-3 h-3 text-emerald-400" />
+                                ) : (
+                                  <Copy className="w-3 h-3" />
+                                )}
+                              </button>
+                            </div>
                           </div>
-                        ) : (
-                          <div className="space-y-1">
-                            <span className="text-slate-500 italic">No custom domain</span>
-                            <br />
-                            <Link
-                              to={`/menu/${c._id}`}
-                              target="_blank"
-                              className="text-[10px] text-brand-400 hover:underline inline-flex items-center gap-1"
-                            >
-                              Direct Preview Link <ExternalLink className="w-2.5 h-2.5" />
-                            </Link>
-                          </div>
-                        )}
-                      </td>
+                        </td>
 
-                      {/* Owner Credentials */}
-                      <td className="p-4">
-                        <div className="space-y-0.5">
-                          <p className="text-slate-200 font-medium">{c.owner?.name || 'Owner'}</p>
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-mono text-[11px] text-slate-400">{c.owner?.email}</span>
-                            <button
-                              onClick={() => handleCopy(c.owner?.email, `email_${c._id}`)}
-                              className="text-slate-500 hover:text-slate-300"
-                              title="Copy Email"
-                            >
-                              {copiedText === `email_${c._id}` ? (
-                                <Check className="w-3 h-3 text-emerald-400" />
-                              ) : (
-                                <Copy className="w-3 h-3" />
+                        {/* 3-Color Brand Palette Swatch */}
+                        <td className="p-4">
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center -space-x-1.5">
+                              <span
+                                className="w-5 h-5 rounded-full border border-slate-900 shadow-xs"
+                                style={{ backgroundColor: primary }}
+                                title={`Primary: ${primary}`}
+                              ></span>
+                              <span
+                                className="w-5 h-5 rounded-full border border-slate-900 shadow-xs"
+                                style={{ backgroundColor: secondary }}
+                                title={`Secondary: ${secondary}`}
+                              ></span>
+                              <span
+                                className="w-5 h-5 rounded-full border border-slate-900 shadow-xs"
+                                style={{ backgroundColor: accent }}
+                                title={`Accent: ${accent}`}
+                              ></span>
+                            </div>
+                            <span className="text-[10px] text-slate-400 font-mono">Tri-Color</span>
+                          </div>
+                        </td>
+
+                        {/* Enabled Features Badges */}
+                        <td className="p-4">
+                          <div className="space-y-1.5 max-w-[220px]">
+                            <div className="flex flex-wrap gap-1">
+                              {feat.posTerminal && (
+                                <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[9px] font-bold">
+                                  POS
+                                </span>
                               )}
+                              {feat.inventoryManagement && (
+                                <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[9px] font-bold">
+                                  Inventory
+                                </span>
+                              )}
+                              {feat.dineInOrdering && (
+                                <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] font-bold">
+                                  Dine-In
+                                </span>
+                              )}
+                              {feat.takeawayOrdering && (
+                                <span className="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[9px] font-bold">
+                                  Takeaway
+                                </span>
+                              )}
+                              {feat.offersAndPromos && (
+                                <span className="px-1.5 py-0.5 rounded bg-pink-500/10 text-pink-400 border border-pink-500/20 text-[9px] font-bold">
+                                  Offers
+                                </span>
+                              )}
+                              {feat.liveKitchenDisplay && (
+                                <span className="px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-[9px] font-bold">
+                                  KDS
+                                </span>
+                              )}
+                            </div>
+
+                            <button
+                              onClick={() => openFeaturesModal(c)}
+                              className="text-[10px] text-brand-400 hover:text-brand-300 font-semibold flex items-center gap-1 cursor-pointer"
+                            >
+                              <Sliders className="w-3 h-3" /> Manage Features
                             </button>
                           </div>
-                        </div>
-                      </td>
+                        </td>
 
-                      {/* Brand Color */}
-                      <td className="p-4">
-                        <div className="flex items-center gap-2">
+                        {/* Status */}
+                        <td className="p-4 text-center">
                           <span
-                            className="w-4 h-4 rounded-full border border-white/20 shadow-sm"
-                            style={{ backgroundColor: c.branding?.primaryColor || '#4f46e5' }}
-                          ></span>
-                          <span className="font-mono text-[11px] text-slate-300 uppercase">
-                            {c.branding?.primaryColor || '#4f46e5'}
+                            className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                              c.status === 'active'
+                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                                : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
+                            }`}
+                          >
+                            {c.status || 'active'}
                           </span>
-                        </div>
-                      </td>
+                        </td>
 
-                      {/* Stats */}
-                      <td className="p-4 text-center">
-                        <span className="inline-block px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 font-semibold text-[11px]">
-                          {c.stats?.dishes || 0} Dishes • {c.stats?.orders || 0} Orders
-                        </span>
-                      </td>
-
-                      {/* Status */}
-                      <td className="p-4 text-center">
-                        <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                            c.status === 'active'
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                              : 'bg-red-500/10 text-red-400 border border-red-500/30'
-                          }`}
-                        >
-                          {c.status || 'active'}
-                        </span>
-                      </td>
-
-                      {/* Actions */}
-                      <td className="p-4 pr-6 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          {c.customDomain && (
+                        {/* Launch & Actions */}
+                        <td className="p-4 pr-6 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {/* Launch Feature Dropdown / Button */}
                             <button
-                              onClick={() => openDnsGuide(c)}
-                              className="p-1.5 text-slate-400 hover:text-amber-400 hover:bg-slate-800 rounded-lg transition"
-                              title="View DNS CNAME Configuration"
+                              onClick={() => setOpenLauncherClient(c)}
+                              className="px-2.5 py-1.5 bg-brand-600/20 hover:bg-brand-600 text-brand-300 hover:text-white border border-brand-500/30 rounded-lg text-xs font-bold flex items-center gap-1 transition shadow-xs"
+                              title="Open Features & Portals"
                             >
-                              <Globe className="w-4 h-4" />
+                              <Eye className="w-3.5 h-3.5" />
+                              <span>Open</span>
                             </button>
-                          )}
 
-                          <button
-                            onClick={() => setEditClientModal(c)}
-                            className="p-1.5 text-slate-400 hover:text-brand-400 hover:bg-slate-800 rounded-lg transition"
-                            title="Edit Client Brand & Domain"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
+                            {/* Direct Impersonate Portal Button */}
+                            <button
+                              onClick={() => handleImpersonate(c._id)}
+                              className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition"
+                              title="Launch Client Dashboard Console"
+                            >
+                              <LogIn className="w-4 h-4" />
+                            </button>
 
-                          <button
-                            onClick={() => handleDeleteClient(c._id, c.name)}
-                            className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition"
-                            title="Delete Client"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                            <button
+                              onClick={() => setEditClientModal(c)}
+                              className="p-1.5 text-slate-400 hover:text-brand-400 hover:bg-slate-800 rounded-lg transition"
+                              title="Edit Brand & Colors"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </button>
+
+                            <button
+                              onClick={() => handleDeleteClient(c._id, c.name)}
+                              className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition"
+                              title="Delete Client"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -549,15 +872,15 @@ const AgencyPortal = () => {
         </div>
       </main>
 
-      {/* MODAL 1: Onboard New Restaurant Client */}
+      {/* MODAL 1: Onboard New Restaurant Client with 3-Color Combined Palette */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl p-6 space-y-5">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl p-6 space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div>
                 <h3 className="font-bold text-lg text-white">Onboard New Restaurant Brand</h3>
                 <p className="text-xs text-slate-400">
-                  Provision a new white-label tenant with custom domain & login credentials.
+                  Provision a new tenant with custom domain, 3-color palette, and feature flags.
                 </p>
               </div>
               <button
@@ -568,21 +891,21 @@ const AgencyPortal = () => {
               </button>
             </div>
 
-            <form onSubmit={handleCreateClient} className="space-y-4">
-              {/* Restaurant Details */}
+            <form onSubmit={handleCreateClient} className="space-y-4 text-xs">
+              {/* 1. Brand Information */}
               <div className="space-y-3">
                 <p className="text-xs font-bold uppercase tracking-wider text-brand-400 flex items-center gap-1.5">
-                  <Building2 className="w-3.5 h-3.5" /> 1. Brand Information
+                  <Building2 className="w-3.5 h-3.5" /> 1. Brand Information & Domain
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-medium text-slate-300 mb-1">
-                      Restaurant / Cafe Name *
+                      Restaurant Name *
                     </label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. The Roastery Cafe"
+                      placeholder="e.g. Truffle Smash Burger Co."
                       value={newClient.restaurantName}
                       onChange={(e) => setNewClient({ ...newClient, restaurantName: e.target.value })}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500"
@@ -595,7 +918,7 @@ const AgencyPortal = () => {
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. order.theroastery.com"
+                      placeholder="e.g. order.theburgerbar.com"
                       value={newClient.customDomain}
                       onChange={(e) => setNewClient({ ...newClient, customDomain: e.target.value })}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-brand-500"
@@ -614,35 +937,23 @@ const AgencyPortal = () => {
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500"
                     />
                   </div>
-
                   <div>
                     <label className="block text-[11px] font-medium text-slate-300 mb-1">UPI Payment ID</label>
                     <input
                       type="text"
-                      placeholder="e.g. roastery@okhdfcbank"
+                      placeholder="e.g. merchant@okaxis"
                       value={newClient.upiId}
                       onChange={(e) => setNewClient({ ...newClient, upiId: e.target.value })}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500"
                     />
                   </div>
                 </div>
-
-                <div>
-                  <label className="block text-[11px] font-medium text-slate-300 mb-1">Address / Location</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. 42 Main High Street, Indiranagar"
-                    value={newClient.address}
-                    onChange={(e) => setNewClient({ ...newClient, address: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500"
-                  />
-                </div>
               </div>
 
-              {/* Owner Login Details */}
+              {/* 2. Client Owner Login */}
               <div className="space-y-3 pt-2 border-t border-slate-800">
                 <p className="text-xs font-bold uppercase tracking-wider text-blue-400 flex items-center gap-1.5">
-                  <Key className="w-3.5 h-3.5" /> 2. Client Owner Login Credentials
+                  <Key className="w-3.5 h-3.5" /> 2. Owner Login Credentials
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
@@ -650,7 +961,7 @@ const AgencyPortal = () => {
                     <input
                       type="text"
                       required
-                      placeholder="Manager / Owner"
+                      placeholder="Manager Name"
                       value={newClient.ownerName}
                       onChange={(e) => setNewClient({ ...newClient, ownerName: e.target.value })}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
@@ -661,7 +972,7 @@ const AgencyPortal = () => {
                     <input
                       type="email"
                       required
-                      placeholder="owner@cafe.com"
+                      placeholder="owner@brand.com"
                       value={newClient.ownerEmail}
                       onChange={(e) => setNewClient({ ...newClient, ownerEmail: e.target.value })}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
@@ -681,14 +992,84 @@ const AgencyPortal = () => {
                 </div>
               </div>
 
-              {/* Theme & Tables */}
+              {/* 3. Three-Color Combined Palette Panel */}
               <div className="space-y-3 pt-2 border-t border-slate-800">
-                <p className="text-xs font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
-                  <Palette className="w-3.5 h-3.5" /> 3. Brand Styling & Tables
-                </p>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
+                    <Palette className="w-3.5 h-3.5" /> 3. 3-Color Combined Brand Palette
+                  </p>
+                  <span className="text-[10px] text-slate-400">1-Click Presets or Custom Pickers</span>
+                </div>
+
+                {/* Preset Swatches Bar */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+                  {COLOR_PRESETS.map((preset) => (
+                    <button
+                      key={preset.name}
+                      type="button"
+                      onClick={() =>
+                        setNewClient({
+                          ...newClient,
+                          primaryColor: preset.primary,
+                          secondaryColor: preset.secondary,
+                          accentColor: preset.accent,
+                        })
+                      }
+                      className="px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 flex items-center gap-2 shrink-0 transition"
+                    >
+                      <div className="flex items-center -space-x-1">
+                        <span className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: preset.primary }} />
+                        <span className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: preset.secondary }} />
+                        <span className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: preset.accent }} />
+                      </div>
+                      <span className="text-[10px] font-semibold text-slate-300">{preset.name}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Live 3-Color Interactive Preview Card */}
+                <div
+                  className="p-3.5 rounded-xl border border-slate-800 flex items-center justify-between gap-4 transition-all"
+                  style={{ backgroundColor: newClient.secondaryColor }}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-xs shadow-sm"
+                      style={{ backgroundColor: newClient.primaryColor }}
+                    >
+                      {newClient.restaurantName ? newClient.restaurantName.charAt(0) : 'R'}
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-white block">
+                        {newClient.restaurantName || 'Sample Brand Menu'}
+                      </span>
+                      <span className="text-[10px] text-slate-300">Live 3-Color Preview Theme</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="px-2 py-0.5 rounded text-[10px] font-bold text-slate-950 shadow-xs"
+                      style={{ backgroundColor: newClient.accentColor }}
+                    >
+                      Special Offer
+                    </span>
+                    <button
+                      type="button"
+                      className="px-3 py-1 rounded-lg text-white font-bold text-[10px] shadow-sm"
+                      style={{ backgroundColor: newClient.primaryColor }}
+                    >
+                      Order Now
+                    </button>
+                  </div>
+                </div>
+
+                {/* The 3 Color Pickers */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-[11px] font-medium text-slate-300 mb-1">Primary Color</label>
+                    <label className="block text-[11px] font-medium text-slate-300 mb-1">
+                      1. Primary Color (Brand Buttons)
+                    </label>
                     <div className="flex items-center gap-2">
                       <input
                         type="color"
@@ -706,7 +1087,29 @@ const AgencyPortal = () => {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-medium text-slate-300 mb-1">Accent Color</label>
+                    <label className="block text-[11px] font-medium text-slate-300 mb-1">
+                      2. Secondary Color (Sidebar/Header)
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={newClient.secondaryColor}
+                        onChange={(e) => setNewClient({ ...newClient, secondaryColor: e.target.value })}
+                        className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0"
+                      />
+                      <input
+                        type="text"
+                        value={newClient.secondaryColor}
+                        onChange={(e) => setNewClient({ ...newClient, secondaryColor: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-1.5 text-xs text-white font-mono uppercase"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-medium text-slate-300 mb-1">
+                      3. Accent Color (Badges/CTA)
+                    </label>
                     <div className="flex items-center gap-2">
                       <input
                         type="color"
@@ -722,18 +1125,46 @@ const AgencyPortal = () => {
                       />
                     </div>
                   </div>
+                </div>
+              </div>
 
-                  <div>
-                    <label className="block text-[11px] font-medium text-slate-300 mb-1">Initial Tables</label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="100"
-                      value={newClient.tableCount}
-                      onChange={(e) => setNewClient({ ...newClient, tableCount: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
-                    />
-                  </div>
+              {/* 4. Pre-enabled Feature Entitlements */}
+              <div className="space-y-3 pt-2 border-t border-slate-800">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5" /> 4. Feature Entitlements
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {SYSTEM_FEATURES.map((feat) => {
+                    const Icon = feat.icon;
+                    const isChecked = newClient.features[feat.key];
+                    return (
+                      <label
+                        key={feat.key}
+                        className={`p-2.5 rounded-xl border flex items-center gap-2 cursor-pointer transition ${
+                          isChecked
+                            ? 'bg-slate-950 border-emerald-500/40 text-white'
+                            : 'bg-slate-950/50 border-slate-800 text-slate-500'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) =>
+                            setNewClient({
+                              ...newClient,
+                              features: {
+                                ...newClient.features,
+                                [feat.key]: e.target.checked,
+                              },
+                            })
+                          }
+                          className="w-3.5 h-3.5 rounded text-emerald-500"
+                        />
+                        <Icon className="w-3.5 h-3.5 shrink-0" />
+                        <span className="text-[11px] font-bold truncate">{feat.name}</span>
+                      </label>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -748,9 +1179,9 @@ const AgencyPortal = () => {
                 <button
                   type="submit"
                   disabled={creating}
-                  className="px-5 py-2.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-medium text-xs rounded-xl shadow-lg shadow-brand-500/20 disabled:opacity-50 cursor-pointer"
+                  className="px-5 py-2.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg transition flex items-center gap-2 disabled:opacity-50"
                 >
-                  {creating ? 'Deploying Tenant...' : 'Deploy Brand System'}
+                  {creating ? 'Deploying Tenant...' : 'Deploy Brand & Domain'}
                 </button>
               </div>
             </form>
@@ -758,98 +1189,233 @@ const AgencyPortal = () => {
         </div>
       )}
 
-      {/* MODAL 2: DNS Setup Guide */}
-      {dnsModalClient && (
+      {/* MODAL 2: Feature Entitlements Management Modal */}
+      {featuresModalClient && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl p-6 space-y-5">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl p-6 space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div>
-                <h3 className="font-bold text-base text-white flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-emerald-400" />
-                  DNS Records for {dnsModalClient.name}
+                <h3 className="font-bold text-base text-white">
+                  Feature Entitlements: {featuresModalClient.name}
                 </h3>
-                <p className="text-xs text-slate-400">Share these DNS instructions with your client</p>
+                <p className="text-xs text-slate-400">
+                  Toggle modules on/off for this specific client restaurant.
+                </p>
               </div>
               <button
-                onClick={() => setDnsModalClient(null)}
+                onClick={() => setFeaturesModalClient(null)}
                 className="text-slate-400 hover:text-white p-1 rounded-lg"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-4 text-xs">
-              <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                <p className="text-slate-300 font-medium">Domain Configured:</p>
-                <p className="font-mono text-emerald-400 font-bold text-sm bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
-                  {dnsModalClient.customDomain || 'No domain assigned'}
-                </p>
-              </div>
+            <div className="space-y-2.5">
+              {SYSTEM_FEATURES.map((feat) => {
+                const Icon = feat.icon;
+                const isEnabled = clientFeaturesState[feat.key] !== false;
 
-              {dnsGuideData ? (
-                <div className="space-y-3">
-                  <p className="text-slate-300 font-medium">Required DNS Record in Client Domain Registrar:</p>
-                  {dnsGuideData.dnsRecords.map((rec, idx) => (
-                    <div key={idx} className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                      <div className="grid grid-cols-3 gap-2 text-[11px]">
-                        <div>
-                          <span className="text-slate-500 block">Record Type</span>
-                          <span className="font-bold text-white font-mono">{rec.type}</span>
-                        </div>
-                        <div>
-                          <span className="text-slate-500 block">Host / Name</span>
-                          <span className="font-bold text-white font-mono">{rec.host}</span>
-                        </div>
-                        <div>
-                          <span className="text-slate-500 block">TTL</span>
-                          <span className="font-bold text-slate-300 font-mono">{rec.ttl}</span>
-                        </div>
+                return (
+                  <div
+                    key={feat.key}
+                    className="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3 hover:border-slate-700 transition"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-lg bg-slate-800 text-brand-400 flex items-center justify-center shrink-0">
+                        <Icon className="w-4 h-4" />
                       </div>
-                      <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
-                        <div>
-                          <span className="text-[10px] text-slate-500 block">Value / Target</span>
-                          <span className="font-mono text-amber-400 font-bold">{rec.value}</span>
-                        </div>
-                        <button
-                          onClick={() => handleCopy(rec.value, `dns_val_${idx}`)}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-[10px] flex items-center gap-1 transition"
-                        >
-                          {copiedText === `dns_val_${idx}` ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                          Copy Value
-                        </button>
+                      <div className="min-w-0">
+                        <span className="text-xs font-bold text-white block truncate">{feat.name}</span>
+                        <span className="text-[10px] text-slate-400 line-clamp-1">{feat.desc}</span>
                       </div>
                     </div>
-                  ))}
-                  <p className="text-[11px] text-slate-400 italic">
-                    💡 Tip: Client adds this in GoDaddy, Namecheap, Cloudflare, or Hostinger. DNS propagation takes 5 to 30 minutes.
-                  </p>
-                </div>
-              ) : (
-                <div className="p-6 text-center text-slate-400">
-                  <RefreshCw className="w-5 h-5 animate-spin mx-auto text-brand-400 mb-2" />
-                  Generating DNS records...
-                </div>
-              )}
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setClientFeaturesState((prev) => ({
+                          ...prev,
+                          [feat.key]: !isEnabled,
+                        }))
+                      }
+                      className={`w-11 h-6 rounded-full transition-colors relative flex items-center p-0.5 shrink-0 ${
+                        isEnabled ? 'bg-emerald-600' : 'bg-slate-700'
+                      }`}
+                    >
+                      <span
+                        className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform duration-200 ${
+                          isEnabled ? 'translate-x-5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
 
-            <div className="pt-3 border-t border-slate-800 flex justify-end">
+            <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-800">
               <button
-                onClick={() => setDnsModalClient(null)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-medium text-xs rounded-xl transition"
+                type="button"
+                onClick={() => setFeaturesModalClient(null)}
+                className="px-4 py-2 text-xs text-slate-400 hover:text-white rounded-xl transition"
               >
-                Close
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveFeatures}
+                className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs rounded-xl shadow-md transition"
+              >
+                Save Feature Permissions
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* MODAL 3: Edit Client Brand */}
+      {/* MODAL 3: Direct Feature Launcher Dialog */}
+      {openLauncherClient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md shadow-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xs"
+                  style={{ backgroundColor: openLauncherClient.branding?.primaryColor || '#4f46e5' }}
+                >
+                  {openLauncherClient.name.charAt(0)}
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-white">
+                    Open Feature: {openLauncherClient.name}
+                  </h3>
+                  <p className="text-[11px] text-slate-400">Launch live features or owner portal</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setOpenLauncherClient(null)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <button
+                onClick={() => {
+                  setOpenLauncherClient(null);
+                  handleImpersonate(openLauncherClient._id);
+                }}
+                className="w-full p-3 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 flex items-center justify-between text-left transition group cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-brand-500/10 text-brand-400 flex items-center justify-center">
+                    <LogIn className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-white block">Launch Owner Dashboard Console</span>
+                    <span className="text-[10px] text-slate-400">
+                      Login as {openLauncherClient.owner?.name || 'Owner'} to manage this outlet
+                    </span>
+                  </div>
+                </div>
+                <ExternalLink className="w-4 h-4 text-slate-500 group-hover:text-white" />
+              </button>
+
+              <a
+                href={
+                  openLauncherClient.customDomain
+                    ? `https://${openLauncherClient.customDomain}`
+                    : `/menu/${openLauncherClient._id}`
+                }
+                target="_blank"
+                rel="noreferrer"
+                className="w-full p-3 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 flex items-center justify-between text-left transition group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
+                    <QrCode className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-white block">Customer Digital QR Menu</span>
+                    <span className="text-[10px] text-slate-400">
+                      {openLauncherClient.customDomain || `localhost:5173/menu/${openLauncherClient._id}`}
+                    </span>
+                  </div>
+                </div>
+                <ExternalLink className="w-4 h-4 text-slate-500 group-hover:text-white" />
+              </a>
+
+              <a
+                href="/pos"
+                target="_blank"
+                rel="noreferrer"
+                className="w-full p-3 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 flex items-center justify-between text-left transition group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                    <Store className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-white block">Counter POS Terminal</span>
+                    <span className="text-[10px] text-slate-400">Cashier quick walk-in billing</span>
+                  </div>
+                </div>
+                <ExternalLink className="w-4 h-4 text-slate-500 group-hover:text-white" />
+              </a>
+
+              <a
+                href="/inventory"
+                target="_blank"
+                rel="noreferrer"
+                className="w-full p-3 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 flex items-center justify-between text-left transition group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+                    <Boxes className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-white block">Inventory & Stock Master</span>
+                    <span className="text-[10px] text-slate-400">Raw materials & restock logs</span>
+                  </div>
+                </div>
+                <ExternalLink className="w-4 h-4 text-slate-500 group-hover:text-white" />
+              </a>
+
+              {openLauncherClient.customDomain && (
+                <button
+                  onClick={() => {
+                    setOpenLauncherClient(null);
+                    openDnsGuide(openLauncherClient);
+                  }}
+                  className="w-full p-3 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 flex items-center justify-between text-left transition group cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+                      <Globe className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="font-bold text-white block">DNS Setup & CNAME Status</span>
+                      <span className="text-[10px] text-slate-400">Review domain records & verification</span>
+                    </div>
+                  </div>
+                  <ExternalLink className="w-4 h-4 text-slate-500 group-hover:text-white" />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: Edit Client Details & 3-Color Palette */}
       {editClientModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl p-6 space-y-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl p-6 space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="font-bold text-base text-white">Edit Client: {editClientModal.name}</h3>
+              <div>
+                <h3 className="font-bold text-lg text-white">Edit Client: {editClientModal.name}</h3>
+                <p className="text-xs text-slate-400">Update domain, 3-color palette, and operational status.</p>
+              </div>
               <button
                 onClick={() => setEditClientModal(null)}
                 className="text-slate-400 hover:text-white p-1 rounded-lg"
@@ -858,34 +1424,25 @@ const AgencyPortal = () => {
               </button>
             </div>
 
-            <form onSubmit={handleUpdateClient} className="space-y-3 text-xs">
-              <div>
-                <label className="block text-slate-300 font-medium mb-1">Restaurant Name</label>
-                <input
-                  type="text"
-                  value={editClientModal.name}
-                  onChange={(e) => setEditClientModal({ ...editClientModal, name: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+            <form onSubmit={handleUpdateClient} className="space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-300 font-medium mb-1">Custom Domain</label>
+                  <label className="block text-[11px] font-medium text-slate-300 mb-1">Brand Name</label>
                   <input
                     type="text"
-                    placeholder="order.clientbrand.com"
-                    value={editClientModal.customDomain || ''}
-                    onChange={(e) => setEditClientModal({ ...editClientModal, customDomain: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono"
+                    required
+                    value={editClientModal.name}
+                    onChange={(e) => setEditClientModal({ ...editClientModal, name: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-slate-300 font-medium mb-1">Status</label>
+                  <label className="block text-[11px] font-medium text-slate-300 mb-1">Status</label>
                   <select
                     value={editClientModal.status || 'active'}
                     onChange={(e) => setEditClientModal({ ...editClientModal, status: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none"
                   >
                     <option value="active">Active</option>
                     <option value="suspended">Suspended</option>
@@ -894,66 +1451,183 @@ const AgencyPortal = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-300 font-medium mb-1">Primary Color</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={editClientModal.branding?.primaryColor || '#4f46e5'}
-                      onChange={(e) =>
-                        setEditClientModal({
-                          ...editClientModal,
-                          branding: { ...editClientModal.branding, primaryColor: e.target.value },
-                        })
-                      }
-                      className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0"
-                    />
-                    <input
-                      type="text"
-                      value={editClientModal.branding?.primaryColor || '#4f46e5'}
-                      onChange={(e) =>
-                        setEditClientModal({
-                          ...editClientModal,
-                          branding: { ...editClientModal.branding, primaryColor: e.target.value },
-                        })
-                      }
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-1.5 text-white font-mono"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-medium mb-1">UPI ID</label>
+                  <label className="block text-[11px] font-medium text-slate-300 mb-1">Custom Domain</label>
                   <input
                     type="text"
-                    value={editClientModal.upiId || ''}
-                    onChange={(e) => setEditClientModal({ ...editClientModal, upiId: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"
+                    placeholder="order.clientdomain.com"
+                    value={editClientModal.customDomain || ''}
+                    onChange={(e) =>
+                      setEditClientModal({ ...editClientModal, customDomain: e.target.value })
+                    }
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-brand-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-medium text-slate-300 mb-1">Slug / Subpath</label>
+                  <input
+                    type="text"
+                    value={editClientModal.slug || ''}
+                    onChange={(e) => setEditClientModal({ ...editClientModal, slug: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-brand-500"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-slate-300 font-medium mb-1">Address</label>
-                <input
-                  type="text"
-                  value={editClientModal.address || ''}
-                  onChange={(e) => setEditClientModal({ ...editClientModal, address: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"
-                />
+              {/* 3-Color Brand Palette */}
+              <div className="space-y-3 pt-2 border-t border-slate-800">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
+                    <Palette className="w-3.5 h-3.5" /> 3-Color Combined Brand Palette
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+                  {COLOR_PRESETS.map((preset) => (
+                    <button
+                      key={preset.name}
+                      type="button"
+                      onClick={() =>
+                        setEditClientModal({
+                          ...editClientModal,
+                          branding: {
+                            ...editClientModal.branding,
+                            primaryColor: preset.primary,
+                            secondaryColor: preset.secondary,
+                            accentColor: preset.accent,
+                          },
+                        })
+                      }
+                      className="px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 flex items-center gap-2 shrink-0 transition"
+                    >
+                      <div className="flex items-center -space-x-1">
+                        <span className="w-3 h-3 rounded-full" style={{ backgroundColor: preset.primary }} />
+                        <span className="w-3 h-3 rounded-full" style={{ backgroundColor: preset.secondary }} />
+                        <span className="w-3 h-3 rounded-full" style={{ backgroundColor: preset.accent }} />
+                      </div>
+                      <span className="text-[10px] font-semibold text-slate-300">{preset.name}</span>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-medium text-slate-300 mb-1">Primary Color</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={editClientModal.branding?.primaryColor || '#4f46e5'}
+                        onChange={(e) =>
+                          setEditClientModal({
+                            ...editClientModal,
+                            branding: {
+                              ...editClientModal.branding,
+                              primaryColor: e.target.value,
+                            },
+                          })
+                        }
+                        className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0"
+                      />
+                      <input
+                        type="text"
+                        value={editClientModal.branding?.primaryColor || '#4f46e5'}
+                        onChange={(e) =>
+                          setEditClientModal({
+                            ...editClientModal,
+                            branding: {
+                              ...editClientModal.branding,
+                              primaryColor: e.target.value,
+                            },
+                          })
+                        }
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-1 text-white font-mono uppercase text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-medium text-slate-300 mb-1">Secondary Color</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={editClientModal.branding?.secondaryColor || '#312e81'}
+                        onChange={(e) =>
+                          setEditClientModal({
+                            ...editClientModal,
+                            branding: {
+                              ...editClientModal.branding,
+                              secondaryColor: e.target.value,
+                            },
+                          })
+                        }
+                        className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0"
+                      />
+                      <input
+                        type="text"
+                        value={editClientModal.branding?.secondaryColor || '#312e81'}
+                        onChange={(e) =>
+                          setEditClientModal({
+                            ...editClientModal,
+                            branding: {
+                              ...editClientModal.branding,
+                              secondaryColor: e.target.value,
+                            },
+                          })
+                        }
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-1 text-white font-mono uppercase text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-medium text-slate-300 mb-1">Accent Color</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={editClientModal.branding?.accentColor || '#06b6d4'}
+                        onChange={(e) =>
+                          setEditClientModal({
+                            ...editClientModal,
+                            branding: {
+                              ...editClientModal.branding,
+                              accentColor: e.target.value,
+                            },
+                          })
+                        }
+                        className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0"
+                      />
+                      <input
+                        type="text"
+                        value={editClientModal.branding?.accentColor || '#06b6d4'}
+                        onChange={(e) =>
+                          setEditClientModal({
+                            ...editClientModal,
+                            branding: {
+                              ...editClientModal.branding,
+                              accentColor: e.target.value,
+                            },
+                          })
+                        }
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-1 text-white font-mono uppercase text-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="pt-3 border-t border-slate-800 flex justify-end gap-2">
+              <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={() => setEditClientModal(null)}
-                  className="px-4 py-2 text-slate-400 hover:text-white rounded-xl"
+                  className="px-4 py-2 text-xs text-slate-400 hover:text-white rounded-xl transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-medium"
+                  className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs rounded-xl shadow-md transition"
                 >
                   Save Changes
                 </button>
@@ -962,9 +1636,76 @@ const AgencyPortal = () => {
           </div>
         </div>
       )}
+
+      {/* MODAL 5: DNS Setup Guide */}
+      {dnsModalClient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl shadow-2xl p-6 space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <Globe className="w-5 h-5 text-emerald-400" />
+                <h3 className="font-bold text-base text-white">DNS CNAME Configuration Guide</h3>
+              </div>
+              <button
+                onClick={() => setDnsModalClient(null)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs space-y-1.5">
+              <span className="text-slate-400 block font-medium">Target Custom Domain:</span>
+              <span className="font-mono font-bold text-emerald-400 text-sm block">
+                {dnsModalClient.customDomain}
+              </span>
+              <p className="text-[11px] text-slate-400 pt-1">
+                Tell your client or IT admin to log in to their DNS provider (Cloudflare, GoDaddy, Namecheap) and create this record:
+              </p>
+            </div>
+
+            {dnsGuideData?.dnsRecords?.map((rec, i) => (
+              <div key={i} className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs space-y-2">
+                <div className="grid grid-cols-3 gap-2 font-mono">
+                  <div>
+                    <span className="text-slate-500 text-[10px] block uppercase">Record Type</span>
+                    <span className="font-bold text-white">{rec.type}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 text-[10px] block uppercase">Host / Name</span>
+                    <span className="font-bold text-white">{rec.host}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 text-[10px] block uppercase">Value / Points To</span>
+                    <span className="font-bold text-brand-400 truncate block">{rec.value}</span>
+                  </div>
+                </div>
+                <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between">
+                  <span className="text-[10px] text-slate-400">{rec.notes}</span>
+                  <button
+                    onClick={() => handleCopy(rec.value, `dns_${i}`)}
+                    className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold flex items-center gap-1"
+                  >
+                    {copiedText === `dns_${i}` ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                    Copy Value
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            <div className="pt-2 flex justify-end">
+              <button
+                onClick={() => setDnsModalClient(null)}
+                className="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default AgencyPortal;
-
