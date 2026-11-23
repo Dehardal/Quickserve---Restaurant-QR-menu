@@ -30,6 +30,7 @@ import {
   CreditCard,
   ChefHat,
   Eye,
+  EyeOff,
   LogIn,
   Search,
   Filter
@@ -143,6 +144,7 @@ const AgencyPortal = () => {
 
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
+  const [showClientPassword, setShowClientPassword] = useState(false);
   const [statusFilter, setStatusFilter] = useState('all');
 
   // Modals
@@ -980,14 +982,24 @@ const AgencyPortal = () => {
                   </div>
                   <div>
                     <label className="block text-[11px] font-medium text-slate-300 mb-1">Password *</label>
-                    <input
-                      type="password"
-                      required
-                      placeholder="Min 6 characters"
-                      value={newClient.ownerPassword}
-                      onChange={(e) => setNewClient({ ...newClient, ownerPassword: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showClientPassword ? 'text' : 'password'}
+                        required
+                        placeholder="Min 6 characters"
+                        value={newClient.ownerPassword}
+                        onChange={(e) => setNewClient({ ...newClient, ownerPassword: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-3 pr-9 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowClientPassword(!showClientPassword)}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 focus:outline-none cursor-pointer"
+                        aria-label={showClientPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showClientPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
