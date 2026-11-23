@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { applyBrandTheme } from '../utils/theme';
 
 const TenantContext = createContext();
 
@@ -44,12 +45,7 @@ export const TenantProvider = ({ children }) => {
           setIsWhiteLabelTenant(true);
 
           // Apply dynamic custom branding colors & title
-          if (t.branding?.primaryColor) {
-            document.documentElement.style.setProperty('--brand-primary', t.branding.primaryColor);
-          }
-          if (t.branding?.accentColor) {
-            document.documentElement.style.setProperty('--brand-accent', t.branding.accentColor);
-          }
+          applyBrandTheme(t.branding);
           if (t.name) {
             document.title = `${t.name} | Digital Menu & Orders`;
           }

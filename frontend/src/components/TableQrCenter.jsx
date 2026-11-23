@@ -500,7 +500,7 @@ const TableQrCenter = () => {
                 <button
                   type="button"
                   onClick={addTable}
-                  className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+                  className="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow-sm cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Add Table
@@ -728,8 +728,9 @@ const TableQrCenter = () => {
                   ? 'bg-indigo-600'
                   : activeChannel === 'takeaway'
                   ? 'bg-purple-600'
-                  : 'bg-slate-900'
+                  : ''
               }`}
+              style={activeChannel === 'dine_in' ? { backgroundColor: restaurant?.branding?.secondaryColor || '#1c1917' } : {}}
             >
               {activeChannel === 'corporate'
                 ? selectedCompany

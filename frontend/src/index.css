@@ -2,6 +2,23 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+:root {
+  --brand-primary: #4f46e5;
+  --brand-secondary: #312e81;
+  --brand-accent: #f59e0b;
+  --brand-50: rgba(79, 70, 229, 0.06);
+  --brand-100: rgba(79, 70, 229, 0.14);
+  --brand-200: rgba(79, 70, 229, 0.25);
+  --brand-300: rgba(79, 70, 229, 0.40);
+  --brand-400: rgba(79, 70, 229, 0.65);
+  --brand-500: #6366f1;
+  --brand-600: #4f46e5;
+  --brand-700: #4338ca;
+  --brand-800: #3730a3;
+  --brand-900: #312e81;
+  --brand-950: #1e1b4b;
+}
+
 @layer base {
   body {
     font-family: 'Inter', sans-serif;

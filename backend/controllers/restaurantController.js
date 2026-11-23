@@ -334,15 +334,13 @@ const generateTableQR = async (req, res) => {
       clientUrl = `${targetBaseUrl}${separator}table=${encodeURIComponent(tableNumber)}&tableToken=${token}`;
     }
 
-    // Generate QR Code with theme color if custom branding is configured
-    const darkColor = restaurant.branding?.accentColor || '#1e293b';
-
+    // Standard high-contrast black QR Code for optimal camera scannability
     const qrDataUrl = await QRCode.toDataURL(clientUrl, {
       errorCorrectionLevel: 'H',
       margin: 1,
       width: 340,
       color: {
-        dark: darkColor,
+        dark: '#000000',
         light: '#ffffff',
       },
     });

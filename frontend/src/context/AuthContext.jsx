@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
+import { applyBrandTheme } from '../utils/theme';
 
 const AuthContext = createContext();
 
@@ -9,6 +10,11 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token') || null);
   const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Automatically apply restaurant branding theme whenever restaurant profile changes
+  useEffect(() => {
+    applyBrandTheme(restaurant?.branding);
+  }, [restaurant]);
 
   // Initialize and load user profile if token is available
   useEffect(() => {

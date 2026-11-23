@@ -8,17 +8,21 @@ export default {
     extend: {
       colors: {
         brand: {
-          50: '#f5f3ff',
-          100: '#ede9fe',
-          200: '#ddd6fe',
-          300: '#c4b5fd',
-          400: '#818cf8',
-          500: '#6366f1', // Indigo primary (Stripe/Linear style)
-          600: '#4f46e5',
-          700: '#4338ca',
-          800: '#3730a3',
-          900: '#312e81',
-          950: '#1e1b4b',
+          DEFAULT: 'var(--brand-600, #4f46e5)',
+          primary: 'var(--brand-primary, #4f46e5)',
+          secondary: 'var(--brand-secondary, #312e81)',
+          accent: 'var(--brand-accent, #f59e0b)',
+          50: 'var(--brand-50, #f5f3ff)',
+          100: 'var(--brand-100, #ede9fe)',
+          200: 'var(--brand-200, #ddd6fe)',
+          300: 'var(--brand-300, #c4b5fd)',
+          400: 'var(--brand-400, #818cf8)',
+          500: 'var(--brand-500, #6366f1)',
+          600: 'var(--brand-600, #4f46e5)',
+          700: 'var(--brand-700, #4338ca)',
+          800: 'var(--brand-800, #3730a3)',
+          900: 'var(--brand-900, #312e81)',
+          950: 'var(--brand-950, #1e1b4b)',
         },
         surface: {
           50: '#f8fafc',  // Slate 50 canvas
