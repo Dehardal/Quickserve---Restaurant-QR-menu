@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
+import TableQrCenter from '../components/TableQrCenter';
 import { useAuth } from '../context/AuthContext';
 import { 
   Save, 
@@ -571,113 +572,9 @@ const Profile = () => {
               </div>
             )}
 
-            {/* TAB 5: Tables & QR Center */}
+            {/* TAB 3: Tables & QR Center */}
             {activeTab === 'tables' && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Table Management */}
-                <div className="lg:col-span-2 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-4">
-                  <div>
-                    <h3 className="text-base font-bold text-slate-900">Dining Tables Management</h3>
-                    <p className="text-xs text-slate-500">
-                      Add, remove, or organize tables. Each table generates a cryptographically secured QR code.
-                    </p>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={newTable}
-                      onChange={(e) => setNewTable(e.target.value)}
-                      placeholder="e.g. Table 6, Patio 1, Rooftop 3"
-                      className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900"
-                    />
-                    <button
-                      type="button"
-                      onClick={addTable}
-                      className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      Add Table
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-2">
-                    {tables.map((t) => (
-                      <div
-                        key={t}
-                        className={`p-3 rounded-xl border flex items-center justify-between transition cursor-pointer ${
-                          selectedTable === t
-                            ? 'border-brand-500 bg-brand-50/40 text-brand-700'
-                            : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'
-                        }`}
-                        onClick={() => setSelectedTable(t)}
-                      >
-                        <span className="font-bold text-xs">{t}</span>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeTable(t);
-                          }}
-                          className="p-1 text-slate-400 hover:text-red-500 rounded"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Live QR Card */}
-                <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm flex flex-col gap-4 text-center">
-                  <div className="border-b border-slate-100 pb-3">
-                    <h3 className="text-sm font-bold text-slate-900">Table QR Generator</h3>
-                    <p className="text-[11px] text-slate-400">
-                      {customDomain ? `Domain: ${customDomain}` : 'Using default system domain'}
-                    </p>
-                  </div>
-
-                  <div className="w-full aspect-square max-w-[220px] mx-auto rounded-2xl bg-white border border-slate-100 p-3 flex flex-col items-center justify-center shadow-inner">
-                    {qrLoading ? (
-                      <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
-                    ) : qrCodeData?.qrCodeUrl ? (
-                      <img src={qrCodeData.qrCodeUrl} alt="" className="w-full h-full object-contain" />
-                    ) : (
-                      <div className="text-slate-400 text-center">
-                        <QrCode className="w-8 h-8 mx-auto mb-1 text-slate-300" />
-                        <span className="text-[10px]">Select a table</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {qrCodeData && (
-                    <div className="space-y-2">
-                      <div className="p-2 rounded-lg bg-slate-50 border border-slate-100 text-[10px] text-slate-500 font-mono truncate text-left">
-                        Target: {qrCodeData.targetUrl}
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        <button
-                          type="button"
-                          onClick={downloadQR}
-                          className="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5"
-                        >
-                          <Download className="w-3.5 h-3.5" />
-                          PNG
-                        </button>
-                        <button
-                          type="button"
-                          onClick={printQR}
-                          className="py-2 px-3 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 shadow-md shadow-brand-500/20"
-                        >
-                          <Printer className="w-3.5 h-3.5" />
-                          Print Tent
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <TableQrCenter />
             )}
 
             {/* Save Button Bar */}
