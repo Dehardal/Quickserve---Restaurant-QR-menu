@@ -18,6 +18,7 @@ import {
   AlertCircle,
   Globe,
   Palette,
+  CreditCard,
   DollarSign
 } from 'lucide-react';
 
