@@ -48,10 +48,7 @@ const registerUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        restaurant: {
-          _id: restaurant._id,
-          name: restaurant.name,
-        },
+        restaurant: restaurant || null,
         token: generateToken(user._id),
       });
     } else {
@@ -95,10 +92,7 @@ const loginUser = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
-      restaurant: restaurant ? {
-        _id: restaurant._id,
-        name: restaurant.name,
-      } : null,
+      restaurant: restaurant || null,
       token: generateToken(user._id),
     });
   } catch (error) {

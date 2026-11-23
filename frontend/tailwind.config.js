@@ -1,4 +1,13 @@
 /** @type {import('tailwindcss').Config} */
+function withOpacity(variableName) {
+  return ({ opacityValue }) => {
+    if (opacityValue !== undefined) {
+      return `rgba(var(${variableName}), ${opacityValue})`;
+    }
+    return `rgb(var(${variableName}))`;
+  };
+}
+
 export default {
   content: [
     "./index.html",
@@ -8,21 +17,21 @@ export default {
     extend: {
       colors: {
         brand: {
-          DEFAULT: 'var(--brand-600, #4f46e5)',
-          primary: 'var(--brand-primary, #4f46e5)',
-          secondary: 'var(--brand-secondary, #312e81)',
-          accent: 'var(--brand-accent, #f59e0b)',
-          50: 'var(--brand-50, #f5f3ff)',
-          100: 'var(--brand-100, #ede9fe)',
-          200: 'var(--brand-200, #ddd6fe)',
-          300: 'var(--brand-300, #c4b5fd)',
-          400: 'var(--brand-400, #818cf8)',
-          500: 'var(--brand-500, #6366f1)',
-          600: 'var(--brand-600, #4f46e5)',
-          700: 'var(--brand-700, #4338ca)',
-          800: 'var(--brand-800, #3730a3)',
-          900: 'var(--brand-900, #312e81)',
-          950: 'var(--brand-950, #1e1b4b)',
+          DEFAULT: withOpacity('--brand-600'),
+          primary: withOpacity('--brand-primary'),
+          secondary: withOpacity('--brand-secondary'),
+          accent: withOpacity('--brand-accent'),
+          50: withOpacity('--brand-50'),
+          100: withOpacity('--brand-100'),
+          200: withOpacity('--brand-200'),
+          300: withOpacity('--brand-300'),
+          400: withOpacity('--brand-400'),
+          500: withOpacity('--brand-500'),
+          600: withOpacity('--brand-600'),
+          700: withOpacity('--brand-700'),
+          800: withOpacity('--brand-800'),
+          900: withOpacity('--brand-900'),
+          950: withOpacity('--brand-950'),
         },
         surface: {
           50: '#f8fafc',  // Slate 50 canvas
@@ -47,12 +56,12 @@ export default {
           '100%': { opacity: '1' },
         },
         slideUp: {
-          '0%': { transform: 'translateY(12px)', opacity: '0' },
-          '100%': { transform: 'translateY(0)', opacity: '1' },
+          '0%': { opacity: '0', transform: 'translateY(12px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
         },
         slideInRight: {
-          '0%': { transform: 'translateX(100%)' },
-          '100%': { transform: 'translateX(0)' },
+          '0%': { opacity: '0', transform: 'translateX(20px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
         }
       }
     },

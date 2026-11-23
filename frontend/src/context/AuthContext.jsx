@@ -8,12 +8,26 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token') || null);
-  const [restaurant, setRestaurant] = useState(null);
+  const [restaurant, setRestaurant] = useState(() => {
+    try {
+      const cached = localStorage.getItem('cached_restaurant');
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(true);
 
   // Automatically apply restaurant branding theme whenever restaurant profile changes
   useEffect(() => {
     applyBrandTheme(restaurant?.branding);
+    if (restaurant) {
+      try {
+        localStorage.setItem('cached_restaurant', JSON.stringify(restaurant));
+      } catch (e) {}
+    } else {
+      localStorage.removeItem('cached_restaurant');
+    }
   }, [restaurant]);
 
   // Initialize and load user profile if token is available
@@ -99,9 +113,11 @@ export const AuthProvider = ({ children }) => {
   // Logout
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('cached_restaurant');
     setToken(null);
     setUser(null);
     setRestaurant(null);
+    applyBrandTheme(null);
   };
 
   // Helper to update restaurant info locally after Profile edits

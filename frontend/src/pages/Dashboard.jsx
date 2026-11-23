@@ -23,6 +23,8 @@ const Dashboard = () => {
   const [inventoryAlerts, setInventoryAlerts] = useState({ rawAlerts: [], dishAlerts: [], totalAlerts: 0 });
   const [loading, setLoading] = useState(true);
 
+  const brandPrimaryHex = restaurant?.branding?.primaryColor || 'var(--brand-primary-hex, #4f46e5)';
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
@@ -92,7 +94,7 @@ const Dashboard = () => {
       value: orders.length,
       sub: 'All-time volume',
       icon: ShoppingBag,
-      color: 'bg-indigo-50 text-brand-600 border-brand-100',
+      color: 'bg-brand-50 text-brand-600 border-brand-100',
     },
     {
       name: 'Active Tables',
@@ -224,8 +226,8 @@ const Dashboard = () => {
                 <svg className="w-full h-full relative z-10" viewBox="0 0 600 200" preserveAspectRatio="none">
                   <defs>
                     <linearGradient id="chart-area-glow" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#6366f1" stopOpacity="0.12" />
-                      <stop offset="100%" stopColor="#6366f1" stopOpacity="0.0" />
+                      <stop offset="0%" stopColor={brandPrimaryHex} stopOpacity="0.16" />
+                      <stop offset="100%" stopColor={brandPrimaryHex} stopOpacity="0.0" />
                     </linearGradient>
                   </defs>
                   
@@ -239,15 +241,15 @@ const Dashboard = () => {
                   <path 
                     d="M 0 170 C 80 150, 120 80, 200 110 C 280 130, 320 50, 400 65 C 480 80, 520 120, 600 135" 
                     fill="none" 
-                    stroke="#6366f1" 
+                    stroke={brandPrimaryHex} 
                     strokeWidth="3.5" 
                     strokeLinecap="round"
                   />
                   
                   {/* Anchor Dots */}
-                  <circle cx="200" cy="110" r="5" fill="#6366f1" stroke="#ffffff" strokeWidth="2" />
-                  <circle cx="400" cy="65" r="5" fill="#6366f1" stroke="#ffffff" strokeWidth="2" />
-                  <circle cx="600" cy="135" r="5" fill="#6366f1" stroke="#ffffff" strokeWidth="2" />
+                  <circle cx="200" cy="110" r="5" fill={brandPrimaryHex} stroke="#ffffff" strokeWidth="2" />
+                  <circle cx="400" cy="65" r="5" fill={brandPrimaryHex} stroke="#ffffff" strokeWidth="2" />
+                  <circle cx="600" cy="135" r="5" fill={brandPrimaryHex} stroke="#ffffff" strokeWidth="2" />
                 </svg>
 
                 {/* X Axis Labels */}
